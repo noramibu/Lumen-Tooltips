@@ -10,7 +10,7 @@
 
 <div align="center">
 
-[![Modrinth Downloads](https://img.shields.io/modrinth/dt/ay9TFvI5?style=for-the-badge&logo=Modrinth&label=Modrinth&color=1bd96a)](https://modrinth.com/project/lumen-tooltips)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/ay9TFvI5?style=for-the-badge&logo=Modrinth&label=Modrinth&color=1bd96a)](https://modrinth.com/project/tooltips)
 [![GitHub Source](https://img.shields.io/badge/Source-181717?style=for-the-badge&logo=GitHub&label=GitHub)](https://github.com/noramibu/lumen-tooltips)
 [![Discord Join](https://img.shields.io/badge/Join-5865F2?style=for-the-badge&logo=Discord&label=Discord)](https://discord.gg/FaxbR9eEFW)
 
