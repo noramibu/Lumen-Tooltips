@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="https://raw.githubusercontent.com/noramibu/lumen-tooltips/tree/main/common/src/main/resources/assets/lumen_tooltips/icon.png" alt="Lumen Tooltips Logo" width="150">
+   <img src="https://raw.githubusercontent.com/noramibu/lumen-tooltips/refs/heads/main/common/src/main/resources/icon.png" alt="Lumen Tooltips Logo" width="150">
 </p>
 
 <h1 align="center">Lumen Tooltips</h1>
