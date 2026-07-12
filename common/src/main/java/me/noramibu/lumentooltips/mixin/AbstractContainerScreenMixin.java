@@ -1,5 +1,6 @@
 package me.noramibu.lumentooltips.mixin;
 
+import java.util.ArrayList;
 import java.util.List;
 import me.noramibu.lumentooltips.client.LumenItemEditor;
 import me.noramibu.lumentooltips.client.screen.LumenContainerOpener;
@@ -60,27 +61,30 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
   private List<Component> lumenTooltips$appendItemEditorHint(
       AbstractContainerScreen<?> screen, ItemStack stack) {
     List<Component> tooltip = getTooltipFromContainerItem(stack);
-    Minecraft minecraft = Minecraft.getInstance();
     LumenConfig config = LumenConfigManager.current();
-    if (config.modules.tooltip.showControlHints && getMenu().getCarried().isEmpty()) {
-      Slot inventorySlot = lumenTooltips$backingSlot();
-      String editKey = config.controls.itemEditorKey;
-      if (LumenItemEditor.isAvailable()
-          && minecraft.player != null
-          && inventorySlot != null
-          && inventorySlot.container == minecraft.player.getInventory()
-          && !LumenInputBinding.UNBOUND.equals(editKey)) {
-        tooltip.add(
-            LumenTooltipAppender.controlHint(
-                editKey, "tooltip.lumen_tooltips.action.edit_item"));
-      }
-      String saveKey = config.modules.itemEditor.saveKey;
-      if (LumenItemEditor.isStorageAvailable()
-          && !LumenInputBinding.UNBOUND.equals(saveKey)) {
-        tooltip.add(
-            LumenTooltipAppender.controlHint(
-                saveKey, "tooltip.lumen_tooltips.action.save_item"));
-      }
+    if (!config.modules.tooltip.showControlHints
+        || !getMenu().getCarried().isEmpty()
+        || !LumenItemEditor.isAvailable()) {
+      return tooltip;
+    }
+
+    tooltip = new ArrayList<>(tooltip);
+    Minecraft minecraft = Minecraft.getInstance();
+    Slot inventorySlot = lumenTooltips$backingSlot();
+    String editKey = config.controls.itemEditorKey;
+    if (minecraft.player != null
+        && inventorySlot != null
+        && inventorySlot.container == minecraft.player.getInventory()
+        && !LumenInputBinding.UNBOUND.equals(editKey)) {
+      tooltip.add(
+          LumenTooltipAppender.controlHint(
+              editKey, "tooltip.lumen_tooltips.action.edit_item"));
+    }
+    String saveKey = config.modules.itemEditor.saveKey;
+    if (!LumenInputBinding.UNBOUND.equals(saveKey)) {
+      tooltip.add(
+          LumenTooltipAppender.controlHint(
+              saveKey, "tooltip.lumen_tooltips.action.save_item"));
     }
     return tooltip;
   }

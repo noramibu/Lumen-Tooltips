@@ -43,8 +43,7 @@ public abstract class GuiGraphicsExtractorMixin {
   }
 
   @Inject(method = "extractDeferredElements", at = @At("RETURN"))
-  private void lumenTooltips$finishTooltipFrame(
-      int mouseX, int mouseY, float tickDelta, CallbackInfo callbackInfo) {
+  private void lumenTooltips$finishTooltipFrame(CallbackInfo callbackInfo) {
     LumenTooltipLayout.finishFrame();
   }
 }

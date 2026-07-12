@@ -92,7 +92,7 @@ public final class LumenTooltipPreview {
           "modules.preview.shulkers",
           "modules.preview.containers" -> Optional.of(configContainerSample());
       case "modules.preview.bundles" -> Optional.of(configBundleSample());
-      case "modules.preview.books" ->
+      case "modules.preview.openBooks", "modules.preview.books" ->
           Optional.of(
               new LumenBookTooltipComponent(
                   "",

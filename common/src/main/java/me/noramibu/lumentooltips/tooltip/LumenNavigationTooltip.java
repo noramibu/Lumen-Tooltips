@@ -82,7 +82,7 @@ public final class LumenNavigationTooltip {
     }
   }
 
-  static MapStats analyzeMap(MapItemSavedData data) {
+  private static MapStats analyzeMap(MapItemSavedData data) {
     MapDecoration playerMarker = uniquePlayerMarker(data);
     int sourceX = playerMarker == null ? MAP_SIZE / 2 : mapCoordinate(playerMarker.x());
     int sourceZ = playerMarker == null ? MAP_SIZE / 2 : mapCoordinate(playerMarker.y());
@@ -93,7 +93,7 @@ public final class LumenNavigationTooltip {
     return analyzePixels(data.scale, data.colors, sourceX, sourceZ, outside);
   }
 
-  static MapStats analyzePixels(
+  private static MapStats analyzePixels(
       byte scale, byte[] colors, int sourceX, int sourceZ, String outside) {
     int explored = 0;
     int nearestDistance = Integer.MAX_VALUE;
@@ -187,11 +187,11 @@ public final class LumenNavigationTooltip {
     }
   }
 
-  static String mapDirection(double dx, double dz) {
+  private static String mapDirection(double dx, double dz) {
     return direction(dx, dz, MAP_DIRECTIONS);
   }
 
-  static String bearing(double dx, double dz) {
+  private static String bearing(double dx, double dz) {
     return direction(dx, dz, BEARINGS);
   }
 
@@ -216,7 +216,7 @@ public final class LumenNavigationTooltip {
         .withStyle(ChatFormatting.GRAY);
   }
 
-  record MapStats(
+  private record MapStats(
       byte scale,
       int exploredPercent,
       String nearestUnexploredDirection,

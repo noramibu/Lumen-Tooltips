@@ -177,7 +177,7 @@ public final class LumenFoodTooltipComponent
     return text == null ? 0 : font.width(text);
   }
 
-  static int saturationTextureX(float value) {
+  private static int saturationTextureX(float value) {
     if (value >= 1.0F) {
       return 21;
     }

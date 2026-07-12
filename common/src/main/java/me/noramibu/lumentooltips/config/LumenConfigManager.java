@@ -11,12 +11,13 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import me.noramibu.lumentooltips.LumenTooltips;
 import org.slf4j.Logger;
 
 public final class LumenConfigManager {
-  private static final int CURRENT_SCHEMA_VERSION = 21;
+  private static final int CURRENT_SCHEMA_VERSION = 1;
   private static final Gson GSON =
       new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
   private static final String FILE_NAME = LumenTooltips.MOD_ID + ".json";
@@ -82,17 +83,12 @@ public final class LumenConfigManager {
     }
   }
 
-  public static void reset(SaveMode saveMode) {
-    apply(new LumenConfig(), saveMode);
-  }
-
   public static LumenConfig editingCopy() {
     return current.copy();
   }
 
-  static LumenConfig validate(LumenConfig config) {
+  private static LumenConfig validate(LumenConfig config) {
     LumenConfig safe = Objects.requireNonNullElseGet(config, LumenConfig::new);
-    int loadedSchemaVersion = safe.schemaVersion;
     safe.schemaVersion = CURRENT_SCHEMA_VERSION;
     safe.controls =
         Objects.requireNonNullElseGet(safe.controls, LumenConfig.ControlConfig::new);
@@ -135,65 +131,13 @@ public final class LumenConfigManager {
     safe.modules.tooltip =
         Objects.requireNonNullElseGet(
             safe.modules.tooltip, LumenConfig.TooltipConfig::new);
+    safe.modules.tooltip.ignoredHiddenComponents =
+        Objects.requireNonNullElseGet(
+            safe.modules.tooltip.ignoredHiddenComponents, LinkedHashSet::new);
+    safe.modules.tooltip.ignoredHiddenComponents.removeIf(Objects::isNull);
     safe.modules.preview =
         Objects.requireNonNullElseGet(
             safe.modules.preview, LumenConfig.PreviewConfig::new);
-    if (loadedSchemaVersion < 2) {
-      safe.modules.food.showEffects = true;
-      safe.modules.preview.containers = true;
-    }
-    if (loadedSchemaVersion < 4) {
-      safe.modules.preview.entities = true;
-      safe.modules.preview.spawnEggs = true;
-      safe.modules.preview.mobBuckets = true;
-      safe.modules.preview.spawners = true;
-    }
-    if (loadedSchemaVersion < 6) {
-      safe.modules.preview.openContainers = true;
-      safe.modules.preview.openKey = LumenInputBinding.LEFT_ALT;
-    }
-    if (loadedSchemaVersion < 7) {
-      safe.modules.enchantments.enabled = true;
-    }
-    if (loadedSchemaVersion < 8) {
-      safe.modules.comparison.enabled = true;
-    }
-    if (loadedSchemaVersion < 14) {
-      safe.modules.navigation.maps = true;
-      safe.modules.navigation.compasses = true;
-      safe.modules.tooltip.showControlHints = true;
-      safe.modules.preview.books = safe.modules.preview.itemDetails;
-      safe.modules.preview.crossbows = safe.modules.preview.itemDetails;
-      safe.modules.preview.fireworks = safe.modules.preview.itemDetails;
-      if (safe.modules.tooltip.maxWidth == 280
-          || safe.modules.tooltip.maxWidth == 380) {
-        safe.modules.tooltip.maxWidth = 480;
-      }
-    }
-    if (loadedSchemaVersion < 15 && safe.modules.tooltip.maxWidth == 480) {
-      safe.modules.tooltip.maxWidth = 0;
-    }
-    if (loadedSchemaVersion < 16) {
-      safe.modules.safety.translationCrashFix = true;
-      safe.modules.safety.globalComponentVisitGuard = true;
-    }
-    if (loadedSchemaVersion < 17) {
-      safe.modules.food.showHunger = true;
-      safe.modules.safety.maxCharacters = 8192;
-      safe.modules.safety.maxTranslationDepth = 64;
-      safe.modules.safety.maxTranslationVisits = 2048;
-    }
-    if (loadedSchemaVersion < 18) {
-      safe.modules.preview.areaEffectClouds = true;
-      safe.modules.preview.displayEntities = true;
-    }
-    if (loadedSchemaVersion < 19) {
-      safe.modules.preview.displayYaw = 30;
-      safe.modules.preview.displayPitch = -15;
-    }
-    if (loadedSchemaVersion < 20) {
-      safe.modules.preview.itemFrames = true;
-    }
     if (safe.modules.itemEditor.target == null) {
       safe.modules.itemEditor.target = ItemEditorStorageTarget.FIRST_AVAILABLE;
     }
@@ -214,7 +158,6 @@ public final class LumenConfigManager {
           safe.modules.itemEditor.pageName.substring(
               0, LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH);
     }
-    boolean explicitLegacyAltActivation = safe.modules.preview.activation == HoldMode.ALT;
     if (safe.modules.preview.activation == null) {
       safe.modules.preview.activation = HoldMode.KEY;
     }
@@ -232,12 +175,6 @@ public final class LumenConfigManager {
         LumenInputBinding.normalize(safe.modules.preview.key, LumenInputBinding.LEFT_SHIFT);
     safe.modules.preview.openKey =
         LumenInputBinding.normalize(safe.modules.preview.openKey, LumenInputBinding.LEFT_ALT);
-    if (loadedSchemaVersion < 9
-        && !explicitLegacyAltActivation
-        && LumenInputBinding.LEFT_ALT.equals(safe.modules.preview.key)
-        && LumenInputBinding.LEFT_ALT.equals(safe.modules.preview.openKey)) {
-      safe.modules.preview.key = LumenInputBinding.LEFT_SHIFT;
-    }
     safe.modules.durability.warningPercent =
         Math.clamp(safe.modules.durability.warningPercent, 1, 99);
     safe.modules.durability.dangerPercent =

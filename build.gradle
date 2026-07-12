@@ -1,11 +1,12 @@
 plugins {
+    id "com.gradleup.shadow" version "9.4.1" apply false
     id "net.fabricmc.fabric-loom" version "${fabric_loom_version}" apply false
     id "net.neoforged.moddev" version "${moddev_version}" apply false
 }
 
 allprojects {
     group = mod_group
-    version = mod_version
+    version = "${artifact_minecraft_version}-${mod_version}"
 }
 
 subprojects {
@@ -32,6 +33,17 @@ subprojects {
         maven {
             name = "Minecraft"
             url = "https://libraries.minecraft.net/"
+        }
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "FastStats"
+                    url = "https://repo.faststats.dev/releases"
+                }
+            }
+            filter {
+                includeGroup("dev.faststats.metrics")
+            }
         }
         exclusiveContent {
             forRepository {
@@ -67,6 +79,7 @@ subprojects {
                 mod_id: mod_id,
                 mod_name: mod_name,
                 mod_version: mod_version,
+                neoforge_mod_version: project.version,
                 mod_group: mod_group,
                 mod_author: mod_author,
                 mod_license: mod_license,

@@ -1,12 +1,14 @@
 package me.noramibu.lumentooltips.config;
 
 import java.util.List;
+import java.util.stream.Stream;
 import me.noramibu.lumentooltips.client.LumenItemEditor;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 public final class LumenOptionRegistry {
   private static final String ITEM_EDITOR_KEY_PATH = "controls.itemEditorKey";
   private static final String ITEM_EDITOR_STORAGE_PREFIX = "modules.itemEditor.";
-  static final List<ConfigOption> OPTIONS =
+  private static final List<ConfigOption> OPTIONS =
       List.of(
           ConfigOption.holdMode(
               "controls.detailsMode",
@@ -180,6 +182,10 @@ public final class LumenOptionRegistry {
               "modules.preview.openContainers",
               config -> config.modules.preview.openContainers,
               (config, value) -> config.modules.preview.openContainers = value),
+          ConfigOption.toggle(
+              "modules.preview.openBooks",
+              config -> config.modules.preview.openBooks,
+              (config, value) -> config.modules.preview.openBooks = value),
           ConfigOption.keyBind(
               "modules.preview.openKey",
               config -> config.modules.preview.openKey,
@@ -255,15 +261,40 @@ public final class LumenOptionRegistry {
               config -> config.modules.preview.spawners,
               (config, value) -> config.modules.preview.spawners = value));
   private static final List<ConfigOption> ACTIVE_OPTIONS =
-      OPTIONS.stream()
+      Stream.concat(OPTIONS.stream(), tooltipFlagOptions())
           .filter(option -> LumenItemEditor.isAvailable() || !ITEM_EDITOR_KEY_PATH.equals(option.path()))
           .filter(
               option ->
-                  LumenItemEditor.isStorageAvailable()
+                  LumenItemEditor.isAvailable()
                       || !option.path().startsWith(ITEM_EDITOR_STORAGE_PREFIX))
           .toList();
 
   private LumenOptionRegistry() {}
+
+  private static Stream<ConfigOption> tooltipFlagOptions() {
+    return Stream.concat(
+        Stream.of(
+            ConfigOption.toggle(
+                "modules.tooltipFlags.ignoreHideTooltip",
+                config -> config.modules.tooltip.ignoreHideTooltip,
+                (config, value) -> config.modules.tooltip.ignoreHideTooltip = value)),
+        BuiltInRegistries.DATA_COMPONENT_TYPE.keySet().stream()
+            .filter(id -> "minecraft".equals(id.getNamespace()))
+            .sorted()
+            .map(id -> hiddenComponentOption(id.toString())));
+  }
+
+  private static ConfigOption hiddenComponentOption(String id) {
+    return ConfigOption.hiddenComponent(
+        id,
+        config -> config.modules.tooltip.ignoredHiddenComponents.contains(id),
+        (config, value) -> {
+          config.modules.tooltip.ignoredHiddenComponents.remove(id);
+          if (value) {
+            config.modules.tooltip.ignoredHiddenComponents.add(id);
+          }
+        });
+  }
 
   public static List<ConfigOption> options() {
     return ACTIVE_OPTIONS;
@@ -295,6 +326,7 @@ public final class LumenOptionRegistry {
           config.modules.safety.translationCrashFix;
       case "modules.preview.activation",
           "modules.preview.openContainers",
+          "modules.preview.openBooks",
           "modules.preview.shulkers",
           "modules.preview.containers",
           "modules.preview.bundles",
@@ -302,7 +334,8 @@ public final class LumenOptionRegistry {
           "modules.preview.entities" -> preview.enabled;
       case "modules.preview.key" ->
           preview.enabled && preview.activation == HoldMode.KEY;
-      case "modules.preview.openKey" -> preview.enabled && preview.openContainers;
+      case "modules.preview.openKey" ->
+          preview.enabled && (preview.openContainers || preview.openBooks);
       case "modules.preview.books",
           "modules.preview.crossbows",
           "modules.preview.fireworks" -> preview.enabled && preview.itemDetails;

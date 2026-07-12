@@ -21,6 +21,9 @@ public record ConfigOption(
     int maxValue,
     int step,
     List<String> cycleValues) {
+  private static final String HIDDEN_COMPONENT_KEY =
+      "config.lumen_tooltips.modules.tooltip_flags.hidden_component";
+  private static final String HIDDEN_COMPONENT_PATH = "modules.tooltipFlags.hiddenComponents.";
   private static final LumenConfig DEFAULTS = new LumenConfig();
 
   public ConfigOption {
@@ -42,6 +45,13 @@ public record ConfigOption(
         1,
         1,
         List.of());
+  }
+
+  public static ConfigOption hiddenComponent(
+      String id,
+      Function<LumenConfig, Boolean> getter,
+      BiConsumer<LumenConfig, Boolean> setter) {
+    return toggle(HIDDEN_COMPONENT_PATH + id, getter, setter);
   }
 
   public static ConfigOption integer(
@@ -207,11 +217,18 @@ public record ConfigOption(
   }
 
   public Component title() {
-    return Component.translatable(this.languageKey);
+    return translated("");
   }
 
   public Component description() {
-    return Component.translatable(this.languageKey + ".desc");
+    return translated(".desc");
+  }
+
+  private Component translated(String suffix) {
+    String key = this.languageKey + suffix;
+    return this.path.startsWith(HIDDEN_COMPONENT_PATH)
+        ? Component.translatable(key, this.path.substring(HIDDEN_COMPONENT_PATH.length()))
+        : Component.translatable(key);
   }
 
   @Nullable
@@ -267,7 +284,7 @@ public record ConfigOption(
                     : Component.literal(value),
                 automatic ? ChatFormatting.GREEN : ChatFormatting.AQUA));
       }
-      case NUMBER ->
+      case NUMBER, TEXT ->
           CommonComponents.optionNameValue(
               title, colored(Component.literal(value), ChatFormatting.AQUA));
       case PERCENT ->
@@ -291,9 +308,6 @@ public record ConfigOption(
                   LumenInputBinding.UNBOUND.equals(value)
                       ? ChatFormatting.RED
                       : ChatFormatting.YELLOW));
-      case TEXT ->
-          CommonComponents.optionNameValue(
-              title, colored(Component.literal(value), ChatFormatting.AQUA));
     };
   }
 
@@ -475,6 +489,9 @@ public record ConfigOption(
   }
 
   private static String languageKey(String path) {
+    if (path.startsWith(HIDDEN_COMPONENT_PATH)) {
+      return HIDDEN_COMPONENT_KEY;
+    }
     return "config.lumen_tooltips."
         + path.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase(Locale.ROOT);
   }

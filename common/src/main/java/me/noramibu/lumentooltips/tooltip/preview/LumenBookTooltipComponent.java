@@ -125,7 +125,7 @@ record LumenBookTooltipComponent(String author, int pageCount, String preview)
     return SKINS.computeIfAbsent(key, ignored -> load(minecraft, author)).getNow(DEFAULT_SKIN);
   }
 
-  static boolean validAuthor(String author) {
+  private static boolean validAuthor(String author) {
     return author != null && PLAYER_NAME.matcher(author).matches();
   }
 

@@ -24,7 +24,7 @@ public final class LumenClientCommand {
       return false;
     }
     String[] parts = trimmed.split("\\s+", 3);
-    if (!isAlias(parts[0])) {
+    if (!"lumen".equals(parts[0]) && !"tooltips".equals(parts[0])) {
       return false;
     }
     if (parts.length == 1 || parts.length == 2 && "config".equals(parts[1])) {
@@ -37,10 +37,6 @@ public final class LumenClientCommand {
       feedback(USAGE_KEY);
     }
     return true;
-  }
-
-  static boolean isAlias(String value) {
-    return "lumen".equals(value) || "tooltips".equals(value);
   }
 
   private static void registerAlias(

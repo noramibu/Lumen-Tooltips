@@ -31,10 +31,6 @@ public final class LumenItemEditor {
     return api != null;
   }
 
-  public static boolean isStorageAvailable() {
-    return api != null;
-  }
-
   public static boolean trySaveToStorage(ItemStack stack, KeyEvent event) {
     LumenConfig.ItemEditorConfig config = LumenConfigManager.current().modules.itemEditor;
     return !LumenInputBinding.UNBOUND.equals(config.saveKey)
@@ -98,7 +94,10 @@ public final class LumenItemEditor {
             outcome.page.plainName.isBlank()
                 ? Component.translatable(
                     "message.lumen_tooltips.item_editor.storage.page", outcome.page.number)
-                : Component.literal(outcome.page.plainName);
+                : Component.translatable(
+                    "message.lumen_tooltips.item_editor.storage.named_page",
+                    outcome.page.plainName,
+                    outcome.page.number);
         feedback(
             "item_editor.storage.saved",
             ChatFormatting.GREEN,

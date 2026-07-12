@@ -185,16 +185,17 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     }
   }
 
-  static float animationTime(long gameTime, float partialTick) {
+  private static float animationTime(long gameTime, float partialTick) {
     return ((gameTime % 1_000_000L) + partialTick) * ANIMATION_SPEED;
   }
 
-  static float loopingFuse(int fuse, long gameTime, float partialTick) {
+  private static float loopingFuse(int fuse, long gameTime, float partialTick) {
     int duration = Math.max(1, fuse);
     return duration - ((gameTime % duration) + partialTick) % duration;
   }
 
-  static void fixDisplayOrientation(DisplayEntityRenderState state, float yaw, float pitch) {
+  private static void fixDisplayOrientation(
+      DisplayEntityRenderState state, float yaw, float pitch) {
     Display.RenderState renderState = state.renderState;
     if (renderState == null) {
       return;
@@ -211,11 +212,11 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     state.entityXRot = pitch;
   }
 
-  static float scaleFor(float width, float height) {
+  private static float scaleFor(float width, float height) {
     return scaleFor(width, height, MODEL_MARGIN);
   }
 
-  static float scaleFor(float width, float height, float margin) {
+  private static float scaleFor(float width, float height, float margin) {
     return margin
         * Math.min(
             MAX_SCALE,

@@ -4,8 +4,9 @@ license="${mod_license}"
 
 [[mods]]
 modId="${mod_id}"
-version="${mod_version}"
+version="${neoforge_mod_version}"
 displayName="${mod_name}"
+logoFile="icon.png"
 authors="${mod_author}"
 description='''${mod_description}'''
 displayTest="IGNORE_SERVER_VERSION"

@@ -1,5 +1,24 @@
 plugins {
+    id "com.gradleup.shadow"
     id "net.neoforged.moddev"
+}
+
+configurations {
+    faststats
+    faststatsCompat
+    faststatsCompatSource
+}
+
+sourceSets { faststatsCompat }
+
+def faststatsCompatJar = tasks.register("faststatsCompatJar", Jar) {
+    archiveFileName = "faststats-neoforge-compat.jar"
+    destinationDirectory = layout.buildDirectory.dir("faststats")
+    from({ zipTree(configurations.faststatsCompatSource.singleFile) }) {
+        exclude "META-INF/services/dev.faststats.neoforge.compat.CompatibilityLayer"
+        exclude "dev/faststats/neoforge/compat/v26_1/CompatibilityLayerImpl*.class"
+    }
+    from(sourceSets.faststatsCompat.output)
 }
 
 neoForge {
@@ -23,10 +42,24 @@ neoForge {
 }
 
 dependencies {
+    implementation files(configurations.faststats, configurations.faststatsCompat)
     compileOnly "org.spongepowered:mixin:${mixin_version}"
+
+    faststats("dev.faststats.metrics:neoforge:0.27.2") { transitive = false }
+    faststats("dev.faststats.metrics:core:0.27.2") { transitive = false }
+    faststats("dev.faststats.metrics:config:0.27.2") { transitive = false }
+    faststatsCompat files(faststatsCompatJar)
+    faststatsCompatSource("dev.faststats.metrics:neoforge:0.27.2+mc26.1-26.2") { transitive = false }
 }
 
 sourceSets {
+    faststatsCompat {
+        compileClasspath = files(provider {
+            sourceSets.main.compileClasspath.files.findAll {
+                it.name != "faststats-neoforge-compat.jar"
+            }
+        })
+    }
     main {
         java {
             srcDir project(":common").file("src/main/java")
@@ -36,3 +69,17 @@ sourceSets {
         }
     }
 }
+
+tasks.named("compileFaststatsCompatJava") {
+    dependsOn tasks.named("createMinecraftArtifacts")
+}
+
+tasks.named("shadowJar") {
+    archiveClassifier = ""
+    configurations = [project.configurations.faststats, project.configurations.faststatsCompat]
+    relocate "dev.faststats", "me.noramibu.lumentooltips.lib.faststats"
+    mergeServiceFiles()
+    exclude "module-info.class"
+}
+
+tasks.named("jar") { archiveClassifier = "dev" }

@@ -125,7 +125,7 @@ final class LumenEntityPreviewResolver {
         .map(LumenEntityPreviewResolver::prepare);
   }
 
-  static Optional<CompoundTag> findSpawnerEntityTag(CompoundTag blockEntityTag) {
+  private static Optional<CompoundTag> findSpawnerEntityTag(CompoundTag blockEntityTag) {
     Optional<CompoundTag> direct =
         blockEntityTag
             .getCompound("SpawnData")
@@ -147,7 +147,7 @@ final class LumenEntityPreviewResolver {
     return Optional.empty();
   }
 
-  static boolean supportsEntityTag(CompoundTag tag, LumenConfig.PreviewConfig config) {
+  private static boolean supportsEntityTag(CompoundTag tag, LumenConfig.PreviewConfig config) {
     return tag.getString("id")
         .map(
             id ->

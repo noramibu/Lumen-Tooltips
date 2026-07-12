@@ -1,13 +1,19 @@
 package me.noramibu.lumentooltips.fabric;
 
+import dev.faststats.Metrics;
+import dev.faststats.fabric.FabricContext;
 import me.noramibu.lumentooltips.LumenTooltips;
 import me.noramibu.lumentooltips.client.FabricItemEditorApi;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
 
 public final class FabricLumenTooltips implements ClientModInitializer {
+  private final FabricContext fastStats =
+      new FabricContext.Factory(LumenTooltips.MOD_ID, "52824245513b7378c46a48dd8982008b")
+          .metrics(Metrics.Factory::create)
+          .create();
+
   @Override
   public void onInitializeClient() {
     LumenTooltips.init(FabricLoader.getInstance().getConfigDir());
@@ -18,9 +24,11 @@ public final class FabricLumenTooltips implements ClientModInitializer {
   }
 
   private static boolean supportsItemEditorApi(Version version) {
+    String value = version.getFriendlyString();
+    int marker = value.lastIndexOf('b');
     try {
-      return version.compareTo(Version.parse("26.1-b19")) >= 0;
-    } catch (VersionParsingException ignored) {
+      return marker >= 0 && Integer.parseInt(value.substring(marker + 1)) >= 19;
+    } catch (NumberFormatException ignored) {
       return false;
     }
   }

@@ -52,9 +52,10 @@ public final class LumenConfigScreen extends Screen {
           new Category("modules.enchantments.", "screen.lumen_tooltips.config.enchantments"),
           new Category("modules.comparison.", "screen.lumen_tooltips.config.comparison"),
           new Category("modules.navigation.", "screen.lumen_tooltips.config.navigation"),
-          new Category("modules.itemEditor.", "screen.lumen_tooltips.config.item_editor"),
           new Category("modules.safety.", "screen.lumen_tooltips.config.safety"),
           new Category("modules.tooltip.", "screen.lumen_tooltips.config.tooltip"),
+          new Category(
+              "modules.tooltipFlags.", "screen.lumen_tooltips.config.tooltip_flags"),
           new Category("modules.preview.", "screen.lumen_tooltips.config.previews"));
 
   private final Screen parent;
@@ -166,17 +167,12 @@ public final class LumenConfigScreen extends Screen {
     boolean missingItemEditor =
         !this.searching
             && this.selectedCategory != null
-            && ("controls.".equals(this.selectedCategory.prefix())
-                    && !LumenItemEditor.isAvailable()
-                || "modules.itemEditor.".equals(this.selectedCategory.prefix())
-                    && !LumenItemEditor.isStorageAvailable());
+            && "controls.".equals(this.selectedCategory.prefix())
+            && !LumenItemEditor.isAvailable();
     if (missingItemEditor) {
       graphics.centeredText(
           this.font,
-          Component.translatable(
-              "modules.itemEditor.".equals(this.selectedCategory.prefix())
-                  ? "screen.lumen_tooltips.config.item_editor_storage_missing"
-                  : "screen.lumen_tooltips.config.item_editor_missing"),
+          Component.translatable("screen.lumen_tooltips.config.item_editor_missing"),
           this.width / 2,
           24,
           WARNING_TEXT_COLOR);
@@ -350,7 +346,8 @@ public final class LumenConfigScreen extends Screen {
 
   private void resetCurrentMenu() {
     LumenConfig config = LumenConfigManager.editingCopy();
-    resetOptions(config, currentMenuOptions(this.searching));
+    currentMenuOptions(this.searching)
+        .forEach(option -> option.setFromString(config, option.defaultValue()));
     LumenConfigManager.apply(config, SaveMode.DISK);
     rebuildPage();
   }
@@ -365,12 +362,8 @@ public final class LumenConfigScreen extends Screen {
                 this.searching
                     ? option.matchesSearch(query)
                     : this.selectedCategory != null
-                        && option.path().startsWith(this.selectedCategory.prefix()))
+                        && this.selectedCategory.contains(option.path()))
         .toList();
-  }
-
-  static void resetOptions(LumenConfig config, List<ConfigOption> options) {
-    options.forEach(option -> option.setFromString(config, option.defaultValue()));
   }
 
   private void startKeyCapture(OptionWidget option) {
@@ -532,7 +525,7 @@ public final class LumenConfigScreen extends Screen {
         + lines.stream().mapToInt(line -> line.getHeight(this.font)).sum();
   }
 
-  static int previewX(int screenWidth, int controlX, int controlWidth, int combinedWidth) {
+  private static int previewX(int screenWidth, int controlX, int controlWidth, int combinedWidth) {
     int right = controlX + controlWidth + PREVIEW_GAP;
     if (right + combinedWidth <= screenWidth - PREVIEW_MARGIN) {
       return right;
@@ -543,7 +536,7 @@ public final class LumenConfigScreen extends Screen {
         : Math.max(PREVIEW_MARGIN, screenWidth - PREVIEW_MARGIN - combinedWidth);
   }
 
-  static int previewY(int screenHeight, int mouseY, int tooltipHeight, boolean corner) {
+  private static int previewY(int screenHeight, int mouseY, int tooltipHeight, boolean corner) {
     return corner
         ? PREVIEW_MARGIN
         : Math.clamp(
@@ -729,6 +722,11 @@ public final class LumenConfigScreen extends Screen {
   }
 
   private record Category(String prefix, String titleKey) {
+    boolean contains(String path) {
+      return path.startsWith(this.prefix)
+          || "controls.".equals(this.prefix) && path.startsWith("modules.itemEditor.");
+    }
+
     Component title() {
       return Component.translatable(this.titleKey);
     }

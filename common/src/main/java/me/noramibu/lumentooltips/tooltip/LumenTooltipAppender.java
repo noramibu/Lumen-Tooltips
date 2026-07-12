@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import me.noramibu.lumentooltips.client.screen.LumenContainerOpener;
 import me.noramibu.lumentooltips.config.HoldMode;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
@@ -69,22 +70,26 @@ public final class LumenTooltipAppender {
 
   private static void appendControlHints(
       ItemStack stack, List<Component> tooltip, LumenConfig.PreviewConfig config) {
-    if (config.enabled
-        && config.activation == HoldMode.KEY
+    if (!config.enabled) {
+      return;
+    }
+    if (config.activation == HoldMode.KEY
         && !LumenInputBinding.UNBOUND.equals(config.key)
         && !LumenInputBinding.isDown(config.key)
         && LumenTooltipPreview.supports(stack)) {
       tooltip.add(
           controlHint(config.key, "tooltip.lumen_tooltips.action.preview"));
     }
-    if (config.enabled
-        && config.openContainers
-        && !LumenInputBinding.UNBOUND.equals(config.openKey)
+    String openAction =
+        config.openContainers && LumenContainerContents.isOpenable(stack)
+            ? "tooltip.lumen_tooltips.action.open_container"
+            : config.openBooks && LumenContainerOpener.isBook(stack)
+                ? "tooltip.lumen_tooltips.action.open_book"
+                : null;
+    if (!LumenInputBinding.UNBOUND.equals(config.openKey)
         && Minecraft.getInstance().screen instanceof AbstractContainerScreen<?>
-        && LumenContainerContents.isOpenable(stack)) {
-      tooltip.add(
-          controlHint(
-              config.openKey, "tooltip.lumen_tooltips.action.open_container"));
+        && openAction != null) {
+      tooltip.add(controlHint(config.openKey, openAction));
     }
   }
 
@@ -98,7 +103,7 @@ public final class LumenTooltipAppender {
         .withStyle(ChatFormatting.DARK_GRAY);
   }
 
-  static void enhanceDurability(
+  private static void enhanceDurability(
       int maxDamage, int damage, List<Component> tooltip, LumenConfig config) {
     if ((!config.modules.durability.showPercent && !config.modules.durability.useColors)
         || maxDamage <= 0) {
@@ -231,7 +236,7 @@ public final class LumenTooltipAppender {
     }
   }
 
-  static void useDecimalEnchantmentLevels(List<Component> tooltip, LumenConfig config) {
+  private static void useDecimalEnchantmentLevels(List<Component> tooltip, LumenConfig config) {
     if (!config.modules.enchantments.decimalLevels) {
       return;
     }
@@ -294,7 +299,7 @@ public final class LumenTooltipAppender {
     return ChatFormatting.GREEN;
   }
 
-  static String trimFloat(float value) {
+  private static String trimFloat(float value) {
     int tenths = Math.round(value * 10.0F);
     return tenths % 10 == 0
         ? Integer.toString(tenths / 10)

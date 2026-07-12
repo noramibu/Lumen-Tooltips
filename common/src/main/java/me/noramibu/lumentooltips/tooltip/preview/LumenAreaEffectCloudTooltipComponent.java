@@ -54,7 +54,7 @@ final class LumenAreaEffectCloudTooltipComponent
     int radiusX = Math.clamp(Math.round(this.cloud.getRadius() * 7.0F), 14, 34);
     int radiusY = Math.max(5, radiusX / 3);
     PotionContents potion = this.cloud.get(DataComponents.POTION_CONTENTS);
-    fillEllipse(graphics, centerX, centerY + 3, radiusX + 2, radiusY, 0x20000000);
+    fillEllipse(graphics, centerX, centerY + 3, radiusX + 2, radiusY);
 
     Minecraft minecraft = Minecraft.getInstance();
     float time =
@@ -133,8 +133,7 @@ final class LumenAreaEffectCloudTooltipComponent
       int centerX,
       int centerY,
       int radiusX,
-      int radiusY,
-      int color) {
+      int radiusY) {
     for (int offsetY = -radiusY; offsetY <= radiusY; offsetY++) {
       int span = ellipseSpan(radiusX, radiusY, offsetY);
       graphics.fill(
@@ -142,16 +141,16 @@ final class LumenAreaEffectCloudTooltipComponent
           centerY + offsetY,
           centerX + span + 1,
           centerY + offsetY + 1,
-          color);
+          0x20000000);
     }
   }
 
-  static int ellipseSpan(int radiusX, int radiusY, int offsetY) {
+  private static int ellipseSpan(int radiusX, int radiusY, int offsetY) {
     double normalizedY = offsetY / (double) radiusY;
     return (int) Math.round(radiusX * Math.sqrt(Math.max(0.0, 1.0 - normalizedY * normalizedY)));
   }
 
-  static int particleCount(float radius, boolean waiting) {
+  private static int particleCount(float radius, boolean waiting) {
     return waiting
         ? 2
         : Math.clamp((int) Math.ceil(Math.PI * radius * radius), 1, MAX_PARTICLES);

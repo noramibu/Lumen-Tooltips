@@ -1,5 +1,8 @@
 package me.noramibu.lumentooltips.config;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 public final class LumenConfig {
   public int schemaVersion = 1;
   public ControlConfig controls = new ControlConfig();
@@ -167,6 +170,8 @@ public final class LumenConfig {
     public boolean edgeFix = true;
     public boolean scrollLongTooltips = true;
     public boolean showControlHints = true;
+    public boolean ignoreHideTooltip = false;
+    public Set<String> ignoredHiddenComponents = new LinkedHashSet<>();
     public int maxWidth = 0;
     public int scrollStep = 18;
 
@@ -175,6 +180,8 @@ public final class LumenConfig {
       copy.edgeFix = this.edgeFix;
       copy.scrollLongTooltips = this.scrollLongTooltips;
       copy.showControlHints = this.showControlHints;
+      copy.ignoreHideTooltip = this.ignoreHideTooltip;
+      copy.ignoredHiddenComponents = new LinkedHashSet<>(this.ignoredHiddenComponents);
       copy.maxWidth = this.maxWidth;
       copy.scrollStep = this.scrollStep;
       return copy;
@@ -186,6 +193,7 @@ public final class LumenConfig {
     public HoldMode activation = HoldMode.KEY;
     public String key = LumenInputBinding.LEFT_SHIFT;
     public boolean openContainers = true;
+    public boolean openBooks = true;
     public String openKey = LumenInputBinding.LEFT_ALT;
     public boolean shulkers = true;
     public boolean containers = true;
@@ -210,6 +218,7 @@ public final class LumenConfig {
       copy.activation = this.activation;
       copy.key = this.key;
       copy.openContainers = this.openContainers;
+      copy.openBooks = this.openBooks;
       copy.openKey = this.openKey;
       copy.shulkers = this.shulkers;
       copy.containers = this.containers;

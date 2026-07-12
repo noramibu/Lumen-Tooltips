@@ -418,28 +418,28 @@ record LumenFireworkTooltipComponent(
 
   private static boolean visible(boolean twinkle, float age, int lifetime) {
     return !twinkle
-        || age < lifetime / 3
+        || age < lifetime / 3.0F
         || ((int) age + lifetime) / 3 % 2 == 0;
   }
 
-  static float sparkAlpha(float age, int lifetime) {
-    return age > lifetime / 2
-        ? 1.0F - (age - lifetime / 2) / lifetime
+  private static float sparkAlpha(float age, int lifetime) {
+    return age > lifetime / 2.0F
+        ? 1.0F - (age - lifetime / 2.0F) / lifetime
         : 0.99F;
   }
 
-  static int sparkLifetime(int seed) {
+  private static int sparkLifetime(int seed) {
     return MIN_SPARK_LIFETIME
         + Math.floorMod(Mth.murmurHash3Mixer(seed), SPARK_LIFETIME_RANGE);
   }
 
-  static float dampedDistance(float age) {
+  private static float dampedDistance(float age) {
     int ticks = (int) age;
     float power = FRICTION_POWERS[ticks];
     return (1.0F - power) / (1.0F - SPARK_FRICTION) + (age - ticks) * power;
   }
 
-  static float gravityDrop(float age) {
+  private static float gravityDrop(float age) {
     int ticks = (int) age;
     float power = FRICTION_POWERS[ticks];
     float distance = (1.0F - power) / (1.0F - SPARK_FRICTION);
@@ -552,11 +552,11 @@ record LumenFireworkTooltipComponent(
     return x;
   }
 
-  static float averageFlightSeconds(int flightDuration) {
+  private static float averageFlightSeconds(int flightDuration) {
     return (10.0F * (1 + flightDuration) + 5.5F) / 20.0F;
   }
 
-  static int flightTicks(int flightDuration) {
+  private static int flightTicks(int flightDuration) {
     return flightDuration < 0 ? 0 : Math.round(averageFlightSeconds(flightDuration) * 20.0F);
   }
 
