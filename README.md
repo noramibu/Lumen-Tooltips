@@ -28,8 +28,9 @@ Lumen Tooltips is a powerful client-side mod that enhances Minecraft's tooltips 
 - **Visual Previews** - See inside containers, books, fireworks, and spawn eggs without placing or using them.
 - **Inventory Actions** - Scroll, wrap, and interact with tooltips using intuitive hotkeys.
 - **Text Safety** - Includes a patch for the Translation Crash, which applies beyond just Tooltips.
-- **Cross-Loader Support** - Fully compatible with both Fabric and NeoForge
-- **Seamless Integration** - Works alongside [Item Editor](https://modrinth.com/mod/item-editor), providing additional keybinds to quickly edit items.
+- **Fully Configurable** - Change features, activation modes, keybinds, and control hints in-game without restarting.
+- **Cross-Loader Support** - Fully compatible with both Fabric and NeoForge.
+- **Seamless Integration** - Edit items or save them directly to [Item Editor](https://modrinth.com/mod/item-editor) storage with configurable keybinds.
 
 ---
 
@@ -51,6 +52,15 @@ Lumen Tooltips is a powerful client-side mod that enhances Minecraft's tooltips 
 
 ## Feature Categories
 
+### Configuration
+- **In-Game Access**: Open with `/lumen` or the Lumen Tooltips button in Minecraft's settings.
+- **Immediate Changes**: Options apply without a save button or restart.
+- **Easy Navigation**: Compact icon categories, option search, and collapsible advanced settings.
+- **Clear Changes**: Changed-value markers plus per-option and current-menu reset buttons.
+- **Keybind Center**: Rebind or unbind every Lumen shortcut with conflict warnings in one place.
+- **Live Examples**: Visual options show formatted before-and-after tooltip previews.
+- **Control Hints**: Configure preview, open, edit, and save hints without disabling their shortcuts.
+
 ### Tooltip Information
 - **Durability Percentage**: Added over Vanilla debug tooltip.
 - **Durability Coloring**: Based on health (configurable thresholds).
@@ -69,6 +79,15 @@ Lumen Tooltips is a powerful client-side mod that enhances Minecraft's tooltips 
 - **Recovery Compass**: Death location.
 - **Dimension Warning**: Warning when a compass target is in another dimension.
 
+### Extra Statistics
+*Disabled by default; every statistic can be enabled separately.*
+- **Fuel and Composting**: Furnace burn duration and Composter success chance.
+- **Item Properties**: Use cooldown, enchantability, and anvil prior-work penalty.
+- **Block Properties**: Hardness, blast resistance, and Enchanting Table power.
+- **Tool Properties**: Data-driven mining level and highest finite base mining speed.
+- **Item Source**: Display name of the mod that registered the item.
+- **Display Controls**: Always, hold-key, or advanced-tooltip activation and seconds/ticks units.
+
 ### Tooltip Layout
 - **Screen Boundaries**: Keeps tooltips inside screen boundaries.
 - **Text Wrapping**: Wraps overly wide tooltip text.
@@ -82,8 +101,13 @@ Lumen Tooltips is a powerful client-side mod that enhances Minecraft's tooltips 
 - **Shulker Boxes**: Content grid with matching shulker color.
 - **Generic Containers**: Container and chest content grids.
 - **Bundles**: Contents with selected-item highlighting and fullness bar like vanilla.
-- **Written Books**: Author face, page count, and first-page preview.
-- **Crossbows**: Loaded-projectile preview.
+- **Filled Maps**: Live map image and markers from client-known map data.
+- **Banners, Shields, and Decorated Pots**: Enlarged vanilla item rendering with stored patterns.
+- **Potions and Tipped Arrows**: Optional vanilla effect icons, levels, colors, and durations; disabled by default.
+- **Ender Chests**: Session-only preview of the last Ender Chest opened in the current world.
+- **Paintings and Signs**: Painting entities and signs or hanging signs with stored text.
+- **Player Heads**: Enlarged native head models using stored profiles and skins.
+- **Written and Writable Books**: First-page preview and page count, plus player heads beside author.
 - **Fireworks**: Animated rocket and firework-star simulation, flight time, burst count, shapes, colors, trails, and twinkle.
 - **Spawn Eggs**: Entity rendering with stored data.
 - **Mob Buckets**: Entity rendering with stored bucket data.
@@ -96,6 +120,10 @@ Lumen Tooltips is a powerful client-side mod that enhances Minecraft's tooltips 
 - **Entity Positioning**: Configurable fixed yaw and pitch for display entities.
 - **Entity Fitting**: Automatic entity fitting, including special horse sizing.
 - **Invisible Entities**: Shows custom_name fallback for invisible entities.
+- **Appearance**: Compact, Vanilla, and Comfortable density plus full/compacted container contents.
+- **Tooltip Styles**: Custom `tooltip_style` backgrounds and frames are respected where applicable.
+- **Preview Colors**: Configurable container tint, counts, titles, and item-derived colors.
+- **Accessibility**: Colorblind durability colors and reduced-motion entity and firework previews.
 
 ### Opening Items
 *Configurable keybind, default `Left Alt`*
@@ -103,29 +131,32 @@ Lumen Tooltips is a powerful client-side mod that enhances Minecraft's tooltips 
 - **Written Books**: Open in Minecraft’s native book viewer.
 - **Writable Books**: Open read-only without signing or modifying them.
 - **Large Chests**: Supports up to six vanilla chest rows.
-- **Inventory Support**: Works from normal inventories and Lumen-opened container screens.
+- **Inventory Support**: Works from normal inventories, the Creative inventory, and Lumen-opened container screens.
+- **Nested Navigation**: Shows breadcrumbs and a native back button while opening stored containers.
+- **Native Feedback**: Returning to the parent plays the matching chest, Ender Chest, or Shulker Box close sound.
 
 ### Text Safety
 - **Recursive Protection**: Protection against malicious recursive translation components, highly configurable.
 - **Component.visit**: Optional global `Component.visit` protection.
 
 ### Extra
-- **Item Editor**: Deep integration with [Item Editor](https://modrinth.com/mod/item-editor), including keybinds for Editing and Saving hovered items.
+- **Item Editor**: Deep API integration with [Item Editor](https://modrinth.com/mod/item-editor), including shortcuts for editing and saving hovered items.
+- **Storage Routing**: Save to the first available slot, a page number, or a named page, with optional page creation and page-number feedback.
 
 ---
 
 ## Screenshots
 <div align="center">
- <img src="" alt="Tooltip Information" width="419" />
- <img src="" alt="Shulker Preview" width="419" />
+ <img src="https://cdn.modrinth.com/data/ay9TFvI5/images/d6472fbb7e361e5d23774169f835cf26372495bd.png" alt="Entity Preview" width="419" />
+ <img src="https://cdn.modrinth.com/data/ay9TFvI5/images/5ff0876c71b50282e12f0ed1903c6538f449cf7f.png" alt="Book Preview" width="419" />
  </div>
 <div align="center">
- <img src="" alt="Book Preview" width="420" />
- <img src="" alt="Firework Preview" width="419" />
+ <img src="https://cdn.modrinth.com/data/ay9TFvI5/images/ad3d88ec66fe0a2a56131275c1c235d907837dc5.png" alt="Gear Comparison" width="419" />
+ <img src="https://cdn.modrinth.com/data/ay9TFvI5/images/49db0b17d54ff43b880252959589cd9fd1fa6d15.png" alt="Firework Preview" width="419" />
  </div>
 <div align="center">
- <img src="" alt="Gear Comparison" width="419" />
- <img src="" alt="Config Menu" width="419" />
+ <img src="https://cdn.modrinth.com/data/ay9TFvI5/images/3629553b81c22050ff9b060ab0625e59c988c52b.png" alt="Firework Details" width="419" />
+ <img src="https://cdn.modrinth.com/data/ay9TFvI5/images/8b5ab64f0d854795372e284ea25509c8e58960de.png" alt="Configuration Menu" width="419" />
  </div>
 
 ---
@@ -148,7 +179,7 @@ Contributions are welcome! Please feel free to:
 ## Related Projects & Inspirations
 If you enjoy Lumen Tooltips, you might also be interested in the projects that inspired some of its features:
 - **AppleSkin**: For the original hunger and saturation visualization (Lumen Tooltips implements this identically thanks to AppleSkins Unlicense).
-- **Meteor Client**: For the shulker-box grid and rotating entity preview styles.
+- **Meteor Client**: For the shulker-box grid and rotating entity preview ideas.
 - **Item Editor**: Lumen Tooltips features deep integration with Item Editor, allowing you to seamlessly transition from viewing an item's tooltip to editing its components.
 
 ---

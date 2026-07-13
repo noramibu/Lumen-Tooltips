@@ -8,6 +8,8 @@ import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
 import me.noramibu.lumentooltips.config.LumenInputBinding;
 import me.noramibu.lumentooltips.tooltip.LumenTooltipAppender;
+import me.noramibu.lumentooltips.tooltip.preview.LumenEnderChestMemory;
+import me.noramibu.lumentooltips.tooltip.preview.LumenTooltipPreview;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -15,6 +17,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +27,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractContainerScreen.class)
@@ -41,6 +45,11 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
 
   @Shadow
   protected abstract List<Component> getTooltipFromContainerItem(ItemStack stack);
+
+  @Inject(method = "removed", at = @At("HEAD"))
+  private void lumenTooltips$captureEnderChest(CallbackInfo callbackInfo) {
+    LumenEnderChestMemory.capture(getMenu(), this.title);
+  }
 
   @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
   private void lumenTooltips$handleHoveredItem(
@@ -61,6 +70,14 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
   private List<Component> lumenTooltips$appendItemEditorHint(
       AbstractContainerScreen<?> screen, ItemStack stack) {
     List<Component> tooltip = getTooltipFromContainerItem(stack);
+    boolean potionPreview = LumenTooltipPreview.isPotionPreviewActive(stack);
+    if (potionPreview) {
+      tooltip = new ArrayList<>(tooltip);
+      tooltip.removeIf(
+          line ->
+              line.getContents() instanceof TranslatableContents contents
+                  && contents.getKey().startsWith("itemGroup."));
+    }
     LumenConfig config = LumenConfigManager.current();
     if (!config.modules.tooltip.showControlHints
         || !getMenu().getCarried().isEmpty()
@@ -68,11 +85,14 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
       return tooltip;
     }
 
-    tooltip = new ArrayList<>(tooltip);
+    if (!potionPreview) {
+      tooltip = new ArrayList<>(tooltip);
+    }
     Minecraft minecraft = Minecraft.getInstance();
     Slot inventorySlot = lumenTooltips$backingSlot();
     String editKey = config.controls.itemEditorKey;
-    if (minecraft.player != null
+    if (config.modules.tooltip.showEditItemHint
+        && minecraft.player != null
         && inventorySlot != null
         && inventorySlot.container == minecraft.player.getInventory()
         && !LumenInputBinding.UNBOUND.equals(editKey)) {
@@ -81,7 +101,8 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
               editKey, "tooltip.lumen_tooltips.action.edit_item"));
     }
     String saveKey = config.modules.itemEditor.saveKey;
-    if (!LumenInputBinding.UNBOUND.equals(saveKey)) {
+    if (config.modules.tooltip.showSaveItemHint
+        && !LumenInputBinding.UNBOUND.equals(saveKey)) {
       tooltip.add(
           LumenTooltipAppender.controlHint(
               saveKey, "tooltip.lumen_tooltips.action.save_item"));

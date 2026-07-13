@@ -15,7 +15,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Bucketable;
+import net.minecraft.world.entity.decoration.painting.Painting;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MobBucketItem;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.CustomData;
@@ -27,6 +29,12 @@ final class LumenEntityPreviewResolver {
   private LumenEntityPreviewResolver() {}
 
   static boolean supports(ItemStack stack, LumenConfig.PreviewConfig config) {
+    if (stack.is(Items.PAINTING)) {
+      TypedEntityData<EntityType<?>> data = stack.get(DataComponents.ENTITY_DATA);
+      return config.paintings
+          && (stack.get(DataComponents.PAINTING_VARIANT) != null
+              || data != null && data.type() == EntityType.PAINTING);
+    }
     if (!sourceEnabled(stack, config)) {
       return false;
     }
@@ -48,6 +56,9 @@ final class LumenEntityPreviewResolver {
     if (level == null) {
       return Optional.empty();
     }
+    if (stack.is(Items.PAINTING)) {
+      return config.paintings ? createPainting(stack, level) : Optional.empty();
+    }
     if (config.spawnEggs && stack.getItem() instanceof SpawnEggItem) {
       return createSpawnEggEntity(stack, level);
     }
@@ -57,6 +68,9 @@ final class LumenEntityPreviewResolver {
   }
 
   private static boolean sourceEnabled(ItemStack stack, LumenConfig.PreviewConfig config) {
+    if (stack.is(Items.PAINTING)) {
+      return config.paintings;
+    }
     if (!config.entities) {
       return false;
     }
@@ -89,6 +103,23 @@ final class LumenEntityPreviewResolver {
       return Optional.empty();
     }
     return Optional.of(prepare(entity));
+  }
+
+  private static Optional<Entity> createPainting(ItemStack stack, Level level) {
+    Painting painting = EntityType.PAINTING.create(level, EntitySpawnReason.LOAD);
+    if (painting == null) {
+      return Optional.empty();
+    }
+    TypedEntityData<EntityType<?>> data = stack.get(DataComponents.ENTITY_DATA);
+    try {
+      painting.applyComponentsFromItemStack(stack);
+      if (data != null && data.type() == EntityType.PAINTING) {
+        data.loadInto(painting);
+      }
+    } catch (RuntimeException exception) {
+      return Optional.empty();
+    }
+    return Optional.of(prepare(painting));
   }
 
   private static Optional<Entity> createBucketEntity(ItemStack stack, Level level) {

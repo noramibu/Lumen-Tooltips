@@ -86,6 +86,10 @@ public final class LumenOptionRegistry {
               "modules.durability.useColors",
               config -> config.modules.durability.useColors,
               (config, value) -> config.modules.durability.useColors = value),
+          ConfigOption.durabilityPalette(
+              "modules.durability.palette",
+              config -> config.modules.durability.palette,
+              (config, value) -> config.modules.durability.palette = value),
           ConfigOption.percent(
               "modules.durability.warningPercent",
               1,
@@ -141,6 +145,66 @@ public final class LumenOptionRegistry {
               config -> config.modules.navigation.compasses,
               (config, value) -> config.modules.navigation.compasses = value),
           ConfigOption.toggle(
+              "modules.extraStatistics.enabled",
+              config -> config.modules.extraStatistics.enabled,
+              (config, value) -> config.modules.extraStatistics.enabled = value),
+          ConfigOption.holdMode(
+              "modules.extraStatistics.activation",
+              config -> config.modules.extraStatistics.activation,
+              (config, value) -> config.modules.extraStatistics.activation = value),
+          ConfigOption.keyBind(
+              "modules.extraStatistics.key",
+              config -> config.modules.extraStatistics.key,
+              (config, value) -> config.modules.extraStatistics.key = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.useSeconds",
+              config -> config.modules.extraStatistics.useSeconds,
+              (config, value) -> config.modules.extraStatistics.useSeconds = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.fuelTime",
+              config -> config.modules.extraStatistics.fuelTime,
+              (config, value) -> config.modules.extraStatistics.fuelTime = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.compostChance",
+              config -> config.modules.extraStatistics.compostChance,
+              (config, value) -> config.modules.extraStatistics.compostChance = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.useCooldown",
+              config -> config.modules.extraStatistics.useCooldown,
+              (config, value) -> config.modules.extraStatistics.useCooldown = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.enchantability",
+              config -> config.modules.extraStatistics.enchantability,
+              (config, value) -> config.modules.extraStatistics.enchantability = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.repairCost",
+              config -> config.modules.extraStatistics.repairCost,
+              (config, value) -> config.modules.extraStatistics.repairCost = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.blockHardness",
+              config -> config.modules.extraStatistics.blockHardness,
+              (config, value) -> config.modules.extraStatistics.blockHardness = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.blastResistance",
+              config -> config.modules.extraStatistics.blastResistance,
+              (config, value) -> config.modules.extraStatistics.blastResistance = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.enchantmentPower",
+              config -> config.modules.extraStatistics.enchantmentPower,
+              (config, value) -> config.modules.extraStatistics.enchantmentPower = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.miningLevel",
+              config -> config.modules.extraStatistics.miningLevel,
+              (config, value) -> config.modules.extraStatistics.miningLevel = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.miningSpeed",
+              config -> config.modules.extraStatistics.miningSpeed,
+              (config, value) -> config.modules.extraStatistics.miningSpeed = value),
+          ConfigOption.toggle(
+              "modules.extraStatistics.modName",
+              config -> config.modules.extraStatistics.modName,
+              (config, value) -> config.modules.extraStatistics.modName = value),
+          ConfigOption.toggle(
               "modules.tooltip.edgeFix",
               config -> config.modules.tooltip.edgeFix,
               (config, value) -> config.modules.tooltip.edgeFix = value),
@@ -152,6 +216,26 @@ public final class LumenOptionRegistry {
               "modules.tooltip.showControlHints",
               config -> config.modules.tooltip.showControlHints,
               (config, value) -> config.modules.tooltip.showControlHints = value),
+          ConfigOption.toggle(
+              "modules.tooltip.showPreviewHint",
+              config -> config.modules.tooltip.showPreviewHint,
+              (config, value) -> config.modules.tooltip.showPreviewHint = value),
+          ConfigOption.toggle(
+              "modules.tooltip.showOpenContainerHint",
+              config -> config.modules.tooltip.showOpenContainerHint,
+              (config, value) -> config.modules.tooltip.showOpenContainerHint = value),
+          ConfigOption.toggle(
+              "modules.tooltip.showOpenBookHint",
+              config -> config.modules.tooltip.showOpenBookHint,
+              (config, value) -> config.modules.tooltip.showOpenBookHint = value),
+          ConfigOption.toggle(
+              "modules.tooltip.showEditItemHint",
+              config -> config.modules.tooltip.showEditItemHint,
+              (config, value) -> config.modules.tooltip.showEditItemHint = value),
+          ConfigOption.toggle(
+              "modules.tooltip.showSaveItemHint",
+              config -> config.modules.tooltip.showSaveItemHint,
+              (config, value) -> config.modules.tooltip.showSaveItemHint = value),
           ConfigOption.integer(
               "modules.tooltip.maxWidth",
               0,
@@ -170,6 +254,18 @@ public final class LumenOptionRegistry {
               "modules.preview.enabled",
               config -> config.modules.preview.enabled,
               (config, value) -> config.modules.preview.enabled = value),
+          ConfigOption.previewDensity(
+              "modules.preview.density",
+              config -> config.modules.preview.density,
+              (config, value) -> config.modules.preview.density = value),
+          ConfigOption.toggle(
+              "modules.preview.accents",
+              config -> config.modules.preview.accents,
+              (config, value) -> config.modules.preview.accents = value),
+          ConfigOption.toggle(
+              "modules.preview.reducedMotion",
+              config -> config.modules.preview.reducedMotion,
+              (config, value) -> config.modules.preview.reducedMotion = value),
           ConfigOption.inputHoldMode(
               "modules.preview.activation",
               config -> config.modules.preview.activation,
@@ -191,6 +287,10 @@ public final class LumenOptionRegistry {
               config -> config.modules.preview.openKey,
               (config, value) -> config.modules.preview.openKey = value),
           ConfigOption.toggle(
+              "modules.preview.nestedNavigation",
+              config -> config.modules.preview.nestedNavigation,
+              (config, value) -> config.modules.preview.nestedNavigation = value),
+          ConfigOption.toggle(
               "modules.preview.shulkers",
               config -> config.modules.preview.shulkers,
               (config, value) -> config.modules.preview.shulkers = value),
@@ -198,10 +298,61 @@ public final class LumenOptionRegistry {
               "modules.preview.containers",
               config -> config.modules.preview.containers,
               (config, value) -> config.modules.preview.containers = value),
+          ConfigOption.containerMode(
+              "modules.preview.containerMode",
+              config -> config.modules.preview.containerMode,
+              (config, value) -> config.modules.preview.containerMode = value),
+          ConfigOption.toggle(
+              "modules.preview.showContainerTitle",
+              config -> config.modules.preview.showContainerTitle,
+              (config, value) -> config.modules.preview.showContainerTitle = value),
+          ConfigOption.toggle(
+              "modules.preview.showContainerCounts",
+              config -> config.modules.preview.showContainerCounts,
+              (config, value) -> config.modules.preview.showContainerCounts = value),
+          ConfigOption.percent(
+              "modules.preview.containerTintPercent",
+              0,
+              100,
+              5,
+              config -> config.modules.preview.containerTintPercent,
+              (config, value) -> config.modules.preview.containerTintPercent = value),
           ConfigOption.toggle(
               "modules.preview.bundles",
               config -> config.modules.preview.bundles,
               (config, value) -> config.modules.preview.bundles = value),
+          ConfigOption.toggle(
+              "modules.preview.maps",
+              config -> config.modules.preview.maps,
+              (config, value) -> config.modules.preview.maps = value),
+          ConfigOption.toggle(
+              "modules.preview.banners",
+              config -> config.modules.preview.banners,
+              (config, value) -> config.modules.preview.banners = value),
+          ConfigOption.toggle(
+              "modules.preview.decoratedPots",
+              config -> config.modules.preview.decoratedPots,
+              (config, value) -> config.modules.preview.decoratedPots = value),
+          ConfigOption.toggle(
+              "modules.preview.potions",
+              config -> config.modules.preview.potions,
+              (config, value) -> config.modules.preview.potions = value),
+          ConfigOption.toggle(
+              "modules.preview.enderChest",
+              config -> config.modules.preview.enderChest,
+              (config, value) -> config.modules.preview.enderChest = value),
+          ConfigOption.toggle(
+              "modules.preview.paintings",
+              config -> config.modules.preview.paintings,
+              (config, value) -> config.modules.preview.paintings = value),
+          ConfigOption.toggle(
+              "modules.preview.playerHeads",
+              config -> config.modules.preview.playerHeads,
+              (config, value) -> config.modules.preview.playerHeads = value),
+          ConfigOption.toggle(
+              "modules.preview.signs",
+              config -> config.modules.preview.signs,
+              (config, value) -> config.modules.preview.signs = value),
           ConfigOption.toggle(
               "modules.preview.itemDetails",
               config -> config.modules.preview.itemDetails,
@@ -210,10 +361,6 @@ public final class LumenOptionRegistry {
               "modules.preview.books",
               config -> config.modules.preview.books,
               (config, value) -> config.modules.preview.books = value),
-          ConfigOption.toggle(
-              "modules.preview.crossbows",
-              config -> config.modules.preview.crossbows,
-              (config, value) -> config.modules.preview.crossbows = value),
           ConfigOption.toggle(
               "modules.preview.fireworks",
               config -> config.modules.preview.fireworks,
@@ -262,7 +409,10 @@ public final class LumenOptionRegistry {
               (config, value) -> config.modules.preview.spawners = value));
   private static final List<ConfigOption> ACTIVE_OPTIONS =
       Stream.concat(OPTIONS.stream(), tooltipFlagOptions())
-          .filter(option -> LumenItemEditor.isAvailable() || !ITEM_EDITOR_KEY_PATH.equals(option.path()))
+          .filter(
+              option ->
+                  LumenItemEditor.isAvailable()
+                      || !ITEM_EDITOR_KEY_PATH.equals(option.path()))
           .filter(
               option ->
                   LumenItemEditor.isAvailable()
@@ -302,6 +452,11 @@ public final class LumenOptionRegistry {
 
   public static boolean isVisible(ConfigOption option, LumenConfig config) {
     LumenConfig.PreviewConfig preview = config.modules.preview;
+    if (option.path().startsWith("modules.extraStatistics.")
+        && !option.path().equals("modules.extraStatistics.enabled")
+        && !config.modules.extraStatistics.enabled) {
+      return false;
+    }
     return switch (option.path()) {
       case "controls.detailsKey" -> config.controls.detailsMode == HoldMode.KEY;
       case "modules.itemEditor.pageNumber" ->
@@ -314,30 +469,64 @@ public final class LumenOptionRegistry {
           config.modules.itemEditor.target != ItemEditorStorageTarget.PAGE_NUMBER;
       case "modules.durability.warningPercent", "modules.durability.dangerPercent" ->
           config.modules.durability.useColors;
+      case "modules.durability.palette" -> config.modules.durability.useColors;
       case "modules.food.showHunger", "modules.food.showSaturation", "modules.food.showEffects" ->
           config.modules.food.enabled;
       case "modules.navigation.maps", "modules.navigation.compasses" ->
           config.modules.navigation.enabled;
+      case "modules.extraStatistics.key" ->
+          config.modules.extraStatistics.activation == HoldMode.KEY;
       case "modules.tooltip.scrollStep" -> config.modules.tooltip.scrollLongTooltips;
+      case "modules.tooltip.showPreviewHint" ->
+          config.modules.tooltip.showControlHints
+              && preview.enabled
+              && preview.activation == HoldMode.KEY;
+      case "modules.tooltip.showOpenContainerHint" ->
+          config.modules.tooltip.showControlHints
+              && preview.enabled
+              && preview.openContainers;
+      case "modules.tooltip.showOpenBookHint" ->
+          config.modules.tooltip.showControlHints && preview.enabled && preview.openBooks;
+      case "modules.tooltip.showEditItemHint", "modules.tooltip.showSaveItemHint" ->
+          config.modules.tooltip.showControlHints && LumenItemEditor.isAvailable();
       case "modules.safety.globalComponentVisitGuard",
           "modules.safety.maxCharacters",
           "modules.safety.maxTranslationDepth",
           "modules.safety.maxTranslationVisits" ->
           config.modules.safety.translationCrashFix;
       case "modules.preview.activation",
+          "modules.preview.density",
+          "modules.preview.accents",
+          "modules.preview.reducedMotion",
           "modules.preview.openContainers",
           "modules.preview.openBooks",
           "modules.preview.shulkers",
           "modules.preview.containers",
           "modules.preview.bundles",
+          "modules.preview.maps",
+          "modules.preview.banners",
+          "modules.preview.decoratedPots",
+          "modules.preview.potions",
+          "modules.preview.enderChest",
+          "modules.preview.paintings",
+          "modules.preview.playerHeads",
+          "modules.preview.signs",
           "modules.preview.itemDetails",
           "modules.preview.entities" -> preview.enabled;
       case "modules.preview.key" ->
           preview.enabled && preview.activation == HoldMode.KEY;
       case "modules.preview.openKey" ->
           preview.enabled && (preview.openContainers || preview.openBooks);
+      case "modules.preview.nestedNavigation" -> preview.enabled && preview.openContainers;
+      case "modules.preview.containerMode",
+          "modules.preview.showContainerTitle",
+          "modules.preview.showContainerCounts" ->
+          preview.enabled && (preview.shulkers || preview.containers || preview.enderChest);
+      case "modules.preview.containerTintPercent" ->
+          preview.enabled
+              && preview.accents
+              && (preview.shulkers || preview.containers || preview.enderChest);
       case "modules.preview.books",
-          "modules.preview.crossbows",
           "modules.preview.fireworks" -> preview.enabled && preview.itemDetails;
       case "modules.preview.displayYaw", "modules.preview.displayPitch" ->
           preview.enabled && preview.entities && preview.displayEntities;

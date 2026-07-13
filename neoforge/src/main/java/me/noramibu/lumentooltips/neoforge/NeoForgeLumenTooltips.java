@@ -4,9 +4,13 @@ import dev.faststats.Metrics;
 import dev.faststats.neoforge.NeoForgeContext;
 import me.noramibu.lumentooltips.LumenTooltips;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ComposterBlock;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
@@ -20,13 +24,33 @@ public final class NeoForgeLumenTooltips {
           .create();
 
   public NeoForgeLumenTooltips() {
-    LumenTooltips.init(FMLPaths.CONFIGDIR.get());
+    LumenTooltips.init(
+        FMLPaths.CONFIGDIR.get(),
+        new LumenTooltips.Platform(
+            namespace ->
+                ModList.get()
+                    .getModContainerById(namespace)
+                    .map(mod -> mod.getModInfo().getDisplayName())
+                    .orElse(namespace),
+            stack -> {
+              var level = Minecraft.getInstance().level;
+              return level == null ? 0 : stack.getBurnTime(null, level.fuelValues());
+            },
+            ComposterBlock::getValue,
+            NeoForgeLumenTooltips::baseBlastResistance));
     NeoForge.EVENT_BUS.register(this);
+  }
+
+  @SuppressWarnings("deprecation")
+  private static float baseBlastResistance(Block block) {
+    return block.getExplosionResistance();
   }
 
   @SubscribeEvent(priority = EventPriority.LOWEST)
   public void removeAppleSkinFoodTooltip(RenderTooltipEvent.GatherComponents event) {
-    if (!LumenConfigManager.current().modules.food.enabled
+    var food = LumenConfigManager.current().modules.food;
+    if (!food.enabled
+        || !(food.showHunger || food.showSaturation)
         || event.getItemStack().get(DataComponents.FOOD) == null) {
       return;
     }

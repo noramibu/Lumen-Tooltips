@@ -123,6 +123,9 @@ public final class LumenConfigManager {
     safe.modules.navigation =
         Objects.requireNonNullElseGet(
             safe.modules.navigation, LumenConfig.NavigationConfig::new);
+    safe.modules.extraStatistics =
+        Objects.requireNonNullElseGet(
+            safe.modules.extraStatistics, LumenConfig.ExtraStatisticsConfig::new);
     safe.modules.itemEditor =
         Objects.requireNonNullElseGet(
             safe.modules.itemEditor, LumenConfig.ItemEditorConfig::new);
@@ -138,6 +141,21 @@ public final class LumenConfigManager {
     safe.modules.preview =
         Objects.requireNonNullElseGet(
             safe.modules.preview, LumenConfig.PreviewConfig::new);
+    if (safe.modules.durability.palette == null) {
+      safe.modules.durability.palette = DurabilityPalette.DEFAULT;
+    }
+    if (safe.modules.preview.density == null) {
+      safe.modules.preview.density = PreviewDensity.VANILLA;
+    }
+    if (safe.modules.preview.containerMode == null) {
+      safe.modules.preview.containerMode = ContainerPreviewMode.FULL;
+    }
+    if (safe.modules.extraStatistics.activation == null) {
+      safe.modules.extraStatistics.activation = HoldMode.ALWAYS;
+    }
+    safe.modules.extraStatistics.key =
+        LumenInputBinding.normalize(
+            safe.modules.extraStatistics.key, LumenInputBinding.LEFT_SHIFT);
     if (safe.modules.itemEditor.target == null) {
       safe.modules.itemEditor.target = ItemEditorStorageTarget.FIRST_AVAILABLE;
     }
@@ -192,6 +210,8 @@ public final class LumenConfigManager {
         Math.clamp(safe.modules.safety.maxTranslationVisits, 64, 8192);
     safe.modules.preview.displayYaw = Math.clamp(safe.modules.preview.displayYaw, -180, 180);
     safe.modules.preview.displayPitch = Math.clamp(safe.modules.preview.displayPitch, -90, 90);
+    safe.modules.preview.containerTintPercent =
+        Math.clamp(safe.modules.preview.containerTintPercent, 0, 100);
     return safe;
   }
 }

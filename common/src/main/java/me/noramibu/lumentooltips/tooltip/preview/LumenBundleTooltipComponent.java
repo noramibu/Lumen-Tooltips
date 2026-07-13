@@ -48,12 +48,12 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
 
   @Override
   public int getHeight(Font font) {
-    return PADDING + this.rows * SLOT_SIZE + PADDING + BAR_HEIGHT + 4;
+    return PADDING * 2 + this.rows * SLOT_SIZE + BAR_HEIGHT + 4;
   }
 
   @Override
   public int getWidth(Font font) {
-    return PADDING + COLUMNS * SLOT_SIZE + PADDING;
+    return PADDING * 2 + COLUMNS * SLOT_SIZE;
   }
 
   @Override
@@ -79,8 +79,9 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
           slotY,
           SLOT_SIZE,
           SLOT_SIZE);
-      graphics.item(item, slotX + 4, slotY + 4, 0);
-      graphics.itemDecorations(font, item, slotX + 4, slotY + 4);
+      int itemOffset = 4;
+      graphics.item(item, slotX + itemOffset, slotY + itemOffset, 0);
+      graphics.itemDecorations(font, item, slotX + itemOffset, slotY + itemOffset);
       if (selected) {
         graphics.blitSprite(
             RenderPipelines.GUI_TEXTURED,
@@ -135,4 +136,5 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
             : Component.literal(Math.round(fullness * 100.0F) + "%");
     graphics.centeredText(font, label, x + BAR_WIDTH / 2, y + 3, CommonColors.WHITE);
   }
+
 }

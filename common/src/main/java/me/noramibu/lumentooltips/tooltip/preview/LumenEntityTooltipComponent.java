@@ -28,9 +28,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public final class LumenEntityTooltipComponent implements TooltipComponent, ClientTooltipComponent {
-  private static final int WIDTH = 80;
-  private static final int HEIGHT = 64;
   private static final int PADDING = 6;
+  private static final int VERTICAL_GAP = 4;
   private static final float MAX_SCALE = 48.0F;
   private static final float MODEL_MARGIN = 0.9F;
   private static final float HORSE_MODEL_MARGIN = 0.7F;
@@ -40,17 +39,23 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
   private final Entity entity;
   private final int displayYaw;
   private final int displayPitch;
+  private final int width;
+  private final int height;
+  private final boolean reducedMotion;
 
   private LumenEntityTooltipComponent(Entity entity, LumenConfig.PreviewConfig config) {
     this.entity = entity;
     this.displayYaw = config.displayYaw;
     this.displayPitch = config.displayPitch;
+    this.width = LumenPreviewStyle.entityWidth(config);
+    this.height = LumenPreviewStyle.entityHeight(config);
+    this.reducedMotion = config.reducedMotion;
   }
 
   static Optional<TooltipComponent> create(Entity entity, LumenConfig.PreviewConfig config) {
     if (entity instanceof AreaEffectCloud cloud) {
       return config.areaEffectClouds
-          ? Optional.of(new LumenAreaEffectCloudTooltipComponent(cloud))
+          ? Optional.of(new LumenAreaEffectCloudTooltipComponent(cloud, config))
           : Optional.empty();
     }
     return entity instanceof Display && !config.displayEntities
@@ -61,12 +66,12 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
 
   @Override
   public int getHeight(Font font) {
-    return HEIGHT;
+    return this.height + VERTICAL_GAP * 2;
   }
 
   @Override
   public int getWidth(Font font) {
-    return WIDTH;
+    return this.width;
   }
 
   @Override
@@ -76,17 +81,18 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     if (minecraft.level == null) {
       return;
     }
-    int renderX = x + (width - WIDTH) / 2;
-    if (drawEndPortal(graphics, renderX, y)) {
+    int renderX = x + (width - this.width) / 2;
+    int renderY = y + VERTICAL_GAP;
+    if (drawEndPortal(graphics, renderX, renderY)) {
       return;
     }
     if (this.entity.isInvisible() && this.entity.isCustomNameVisible()) {
-      drawVisibleName(font, graphics, renderX, y);
+      drawVisibleName(font, graphics, renderX, renderY);
       return;
     }
     long gameTime = minecraft.level.getGameTime();
     float partialTick = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-    float animation = animationTime(gameTime, partialTick);
+    float animation = this.reducedMotion ? 0.0F : animationTime(gameTime, partialTick);
     this.entity.tickCount = (int) animation;
     EntityRenderState state;
     try {
@@ -142,9 +148,9 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
         new Quaternionf().rotateZ((float) Math.PI),
         null,
         renderX,
-        y,
-        renderX + WIDTH,
-        y + HEIGHT);
+        renderY,
+        renderX + this.width,
+        renderY + this.height);
   }
 
   private boolean drawEndPortal(GuiGraphicsExtractor graphics, int x, int y) {
@@ -165,8 +171,8 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
             sky.getTextureView(), sky.getSampler(), portal.getTextureView(), portal.getSampler()),
         x + inset,
         y + inset,
-        x + WIDTH - inset,
-        y + HEIGHT - inset);
+        x + this.width - inset,
+        y + this.height - inset);
     return true;
   }
 
@@ -176,11 +182,11 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     if (name == null) {
       return;
     }
-    var lines = font.split(name, WIDTH - PADDING * 2);
-    int count = Math.min(lines.size(), (HEIGHT - PADDING * 2) / font.lineHeight);
-    int lineY = y + (HEIGHT - count * font.lineHeight) / 2;
+    var lines = font.split(name, this.width - PADDING * 2);
+    int count = Math.min(lines.size(), (this.height - PADDING * 2) / font.lineHeight);
+    int lineY = y + (this.height - count * font.lineHeight) / 2;
     for (int index = 0; index < count; index++) {
-      graphics.centeredText(font, lines.get(index), x + WIDTH / 2, lineY, 0xFFFFFFFF);
+      graphics.centeredText(font, lines.get(index), x + this.width / 2, lineY, 0xFFFFFFFF);
       lineY += font.lineHeight;
     }
   }
@@ -212,14 +218,16 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     state.entityXRot = pitch;
   }
 
-  private static float scaleFor(float width, float height) {
+  private float scaleFor(float width, float height) {
     return scaleFor(width, height, MODEL_MARGIN);
   }
 
-  private static float scaleFor(float width, float height, float margin) {
+  private float scaleFor(float width, float height, float margin) {
     return margin
         * Math.min(
             MAX_SCALE,
-            Math.min((WIDTH - PADDING * 2) / width, (HEIGHT - PADDING * 2) / height));
+            Math.min(
+                (this.width - PADDING * 2) / width,
+                (this.height - PADDING * 2) / height));
   }
 }

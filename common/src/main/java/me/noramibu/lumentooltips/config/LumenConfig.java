@@ -36,6 +36,7 @@ public final class LumenConfig {
     public EnchantmentConfig enchantments = new EnchantmentConfig();
     public ComparisonConfig comparison = new ComparisonConfig();
     public NavigationConfig navigation = new NavigationConfig();
+    public ExtraStatisticsConfig extraStatistics = new ExtraStatisticsConfig();
     public ItemEditorConfig itemEditor = new ItemEditorConfig();
     public SafetyConfig safety = new SafetyConfig();
     public TooltipConfig tooltip = new TooltipConfig();
@@ -48,6 +49,7 @@ public final class LumenConfig {
       copy.enchantments = this.enchantments.copy();
       copy.comparison = this.comparison.copy();
       copy.navigation = this.navigation.copy();
+      copy.extraStatistics = this.extraStatistics.copy();
       copy.itemEditor = this.itemEditor.copy();
       copy.safety = this.safety.copy();
       copy.tooltip = this.tooltip.copy();
@@ -83,6 +85,7 @@ public final class LumenConfig {
   public static final class DurabilityConfig {
     public boolean showPercent = true;
     public boolean useColors = true;
+    public DurabilityPalette palette = DurabilityPalette.DEFAULT;
     public int warningPercent = 50;
     public int dangerPercent = 25;
 
@@ -90,6 +93,7 @@ public final class LumenConfig {
       DurabilityConfig copy = new DurabilityConfig();
       copy.showPercent = this.showPercent;
       copy.useColors = this.useColors;
+      copy.palette = this.palette;
       copy.warningPercent = this.warningPercent;
       copy.dangerPercent = this.dangerPercent;
       return copy;
@@ -148,6 +152,44 @@ public final class LumenConfig {
     }
   }
 
+  public static final class ExtraStatisticsConfig {
+    public boolean enabled = false;
+    public HoldMode activation = HoldMode.ALWAYS;
+    public String key = LumenInputBinding.LEFT_SHIFT;
+    public boolean useSeconds = true;
+    public boolean fuelTime = true;
+    public boolean compostChance = true;
+    public boolean useCooldown = true;
+    public boolean enchantability = true;
+    public boolean repairCost = true;
+    public boolean blockHardness = true;
+    public boolean blastResistance = true;
+    public boolean enchantmentPower = true;
+    public boolean miningLevel = true;
+    public boolean miningSpeed = true;
+    public boolean modName = true;
+
+    private ExtraStatisticsConfig copy() {
+      ExtraStatisticsConfig copy = new ExtraStatisticsConfig();
+      copy.enabled = this.enabled;
+      copy.activation = this.activation;
+      copy.key = this.key;
+      copy.useSeconds = this.useSeconds;
+      copy.fuelTime = this.fuelTime;
+      copy.compostChance = this.compostChance;
+      copy.useCooldown = this.useCooldown;
+      copy.enchantability = this.enchantability;
+      copy.repairCost = this.repairCost;
+      copy.blockHardness = this.blockHardness;
+      copy.blastResistance = this.blastResistance;
+      copy.enchantmentPower = this.enchantmentPower;
+      copy.miningLevel = this.miningLevel;
+      copy.miningSpeed = this.miningSpeed;
+      copy.modName = this.modName;
+      return copy;
+    }
+  }
+
   public static final class SafetyConfig {
     public boolean translationCrashFix = true;
     public boolean globalComponentVisitGuard = true;
@@ -170,6 +212,11 @@ public final class LumenConfig {
     public boolean edgeFix = true;
     public boolean scrollLongTooltips = true;
     public boolean showControlHints = true;
+    public boolean showPreviewHint = true;
+    public boolean showOpenContainerHint = true;
+    public boolean showOpenBookHint = true;
+    public boolean showEditItemHint = true;
+    public boolean showSaveItemHint = true;
     public boolean ignoreHideTooltip = false;
     public Set<String> ignoredHiddenComponents = new LinkedHashSet<>();
     public int maxWidth = 0;
@@ -180,6 +227,11 @@ public final class LumenConfig {
       copy.edgeFix = this.edgeFix;
       copy.scrollLongTooltips = this.scrollLongTooltips;
       copy.showControlHints = this.showControlHints;
+      copy.showPreviewHint = this.showPreviewHint;
+      copy.showOpenContainerHint = this.showOpenContainerHint;
+      copy.showOpenBookHint = this.showOpenBookHint;
+      copy.showEditItemHint = this.showEditItemHint;
+      copy.showSaveItemHint = this.showSaveItemHint;
       copy.ignoreHideTooltip = this.ignoreHideTooltip;
       copy.ignoredHiddenComponents = new LinkedHashSet<>(this.ignoredHiddenComponents);
       copy.maxWidth = this.maxWidth;
@@ -190,6 +242,9 @@ public final class LumenConfig {
 
   public static final class PreviewConfig {
     public boolean enabled = true;
+    public PreviewDensity density = PreviewDensity.VANILLA;
+    public boolean accents = true;
+    public boolean reducedMotion = false;
     public HoldMode activation = HoldMode.KEY;
     public String key = LumenInputBinding.LEFT_SHIFT;
     public boolean openContainers = true;
@@ -197,10 +252,22 @@ public final class LumenConfig {
     public String openKey = LumenInputBinding.LEFT_ALT;
     public boolean shulkers = true;
     public boolean containers = true;
+    public ContainerPreviewMode containerMode = ContainerPreviewMode.FULL;
+    public boolean showContainerTitle = false;
+    public boolean showContainerCounts = true;
+    public int containerTintPercent = 55;
     public boolean bundles = true;
+    public boolean maps = true;
+    public boolean banners = true;
+    public boolean decoratedPots = true;
+    public boolean potions = false;
+    public boolean enderChest = true;
+    public boolean paintings = true;
+    public boolean playerHeads = true;
+    public boolean signs = true;
+    public boolean nestedNavigation = true;
     public boolean itemDetails = true;
     public boolean books = true;
-    public boolean crossbows = true;
     public boolean fireworks = true;
     public boolean entities = true;
     public boolean areaEffectClouds = true;
@@ -215,6 +282,9 @@ public final class LumenConfig {
     private PreviewConfig copy() {
       PreviewConfig copy = new PreviewConfig();
       copy.enabled = this.enabled;
+      copy.density = this.density;
+      copy.accents = this.accents;
+      copy.reducedMotion = this.reducedMotion;
       copy.activation = this.activation;
       copy.key = this.key;
       copy.openContainers = this.openContainers;
@@ -222,10 +292,22 @@ public final class LumenConfig {
       copy.openKey = this.openKey;
       copy.shulkers = this.shulkers;
       copy.containers = this.containers;
+      copy.containerMode = this.containerMode;
+      copy.showContainerTitle = this.showContainerTitle;
+      copy.showContainerCounts = this.showContainerCounts;
+      copy.containerTintPercent = this.containerTintPercent;
       copy.bundles = this.bundles;
+      copy.maps = this.maps;
+      copy.banners = this.banners;
+      copy.decoratedPots = this.decoratedPots;
+      copy.potions = this.potions;
+      copy.enderChest = this.enderChest;
+      copy.paintings = this.paintings;
+      copy.playerHeads = this.playerHeads;
+      copy.signs = this.signs;
+      copy.nestedNavigation = this.nestedNavigation;
       copy.itemDetails = this.itemDetails;
       copy.books = this.books;
-      copy.crossbows = this.crossbows;
       copy.fireworks = this.fireworks;
       copy.entities = this.entities;
       copy.areaEffectClouds = this.areaEffectClouds;

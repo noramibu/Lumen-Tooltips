@@ -147,18 +147,29 @@ public record ConfigOption(
       String path,
       Function<LumenConfig, ItemEditorStorageTarget> getter,
       BiConsumer<LumenConfig, ItemEditorStorageTarget> setter) {
-    ItemEditorStorageTarget defaultValue = getter.apply(DEFAULTS);
-    return create(
-        path,
-        OptionControl.CYCLE,
-        defaultValue.serializedName(),
-        config -> getter.apply(config).serializedName(),
-        (config, value) ->
-            setter.accept(config, ItemEditorStorageTarget.byName(value, defaultValue)),
-        0,
-        0,
-        1,
-        List.of("first_available", "page_number", "page_name"));
+    return enumCycle(
+        path, getter, setter, List.of("first_available", "page_number", "page_name"));
+  }
+
+  public static ConfigOption durabilityPalette(
+      String path,
+      Function<LumenConfig, DurabilityPalette> getter,
+      BiConsumer<LumenConfig, DurabilityPalette> setter) {
+    return enumCycle(path, getter, setter, List.of("default", "colorblind"));
+  }
+
+  public static ConfigOption previewDensity(
+      String path,
+      Function<LumenConfig, PreviewDensity> getter,
+      BiConsumer<LumenConfig, PreviewDensity> setter) {
+    return enumCycle(path, getter, setter, List.of("compact", "vanilla", "comfortable"));
+  }
+
+  public static ConfigOption containerMode(
+      String path,
+      Function<LumenConfig, ContainerPreviewMode> getter,
+      BiConsumer<LumenConfig, ContainerPreviewMode> setter) {
+    return enumCycle(path, getter, setter, List.of("compact", "full"));
   }
 
   public static ConfigOption holdMode(
@@ -180,13 +191,21 @@ public record ConfigOption(
       Function<LumenConfig, HoldMode> getter,
       BiConsumer<LumenConfig, HoldMode> setter,
       List<String> cycleValues) {
-    HoldMode defaultValue = getter.apply(DEFAULTS);
+    return enumCycle(path, getter, setter, cycleValues);
+  }
+
+  private static <E extends Enum<E>> ConfigOption enumCycle(
+      String path,
+      Function<LumenConfig, E> getter,
+      BiConsumer<LumenConfig, E> setter,
+      List<String> cycleValues) {
+    E defaultValue = getter.apply(DEFAULTS);
     return create(
         path,
         OptionControl.CYCLE,
-        defaultValue.serializedName(),
-        config -> getter.apply(config).serializedName(),
-        (config, value) -> setter.accept(config, HoldMode.byName(value, defaultValue)),
+        serializedName(defaultValue),
+        config -> serializedName(getter.apply(config)),
+        (config, value) -> setter.accept(config, enumValue(value, defaultValue)),
         0,
         0,
         1,
@@ -248,8 +267,6 @@ public record ConfigOption(
     return switch (this.path) {
       case "modules.comparison.enabled" -> comparisonPreview(config);
       case "modules.tooltip.showControlHints" -> controlHintPreview(config);
-      case "modules.safety.translationCrashFix", "modules.safety.globalComponentVisitGuard" ->
-          safetyPreview(config, this.path.endsWith("globalComponentVisitGuard"));
       default -> null;
     };
   }
@@ -294,11 +311,18 @@ public record ConfigOption(
           CommonComponents.optionNameValue(
               title,
               colored(
-                  this.path.equals("modules.itemEditor.target")
-                      ? ItemEditorStorageTarget.byName(
-                              value, ItemEditorStorageTarget.FIRST_AVAILABLE)
-                          .displayName()
-                      : HoldMode.byName(value, HoldMode.ALWAYS).displayName(),
+                  switch (this.path) {
+                    case "modules.itemEditor.target" ->
+                        enumValue(value, ItemEditorStorageTarget.FIRST_AVAILABLE)
+                            .displayName();
+                    case "modules.durability.palette" ->
+                        enumValue(value, DurabilityPalette.DEFAULT).displayName();
+                    case "modules.preview.density" ->
+                        enumValue(value, PreviewDensity.VANILLA).displayName();
+                    case "modules.preview.containerMode" ->
+                        enumValue(value, ContainerPreviewMode.FULL).displayName();
+                    default -> enumValue(value, HoldMode.ALWAYS).displayName();
+                  },
                   ChatFormatting.YELLOW));
       case KEY_BIND ->
           CommonComponents.optionNameValue(
@@ -322,12 +346,14 @@ public record ConfigOption(
       durability.append(" (" + percent + "%)");
     }
     if (config.modules.durability.useColors) {
-      durability.withStyle(
+      boolean colorblind = config.modules.durability.palette == DurabilityPalette.COLORBLIND;
+      int color =
           percent <= config.modules.durability.dangerPercent
-              ? ChatFormatting.RED
+              ? colorblind ? 0xD55E00 : 0xFF5555
               : percent <= config.modules.durability.warningPercent
-                  ? ChatFormatting.YELLOW
-                  : ChatFormatting.GREEN);
+                  ? colorblind ? 0xE69F00 : 0xFFFF55
+                  : colorblind ? 0x0072B2 : 0x55FF55;
+      durability.withStyle(style -> style.withColor(color));
     }
     return Component.translatable("item.minecraft.diamond_pickaxe").append("\n").append(durability);
   }
@@ -437,20 +463,6 @@ public record ConfigOption(
     return preview;
   }
 
-  private static Component safetyPreview(LumenConfig config, boolean global) {
-    boolean enabled =
-        config.modules.safety.translationCrashFix
-            && (!global || config.modules.safety.globalComponentVisitGuard);
-    return Component.translatable("screen.lumen_tooltips.config.preview.unsafe_item")
-        .append("\n")
-        .append(
-            Component.translatable(
-                    enabled
-                        ? "tooltip.lumen_tooltips.unsafe_text"
-                        : "screen.lumen_tooltips.config.preview.expanded_text")
-                .withStyle(enabled ? ChatFormatting.RED : ChatFormatting.GRAY));
-  }
-
   public void setFromString(LumenConfig config, String value) {
     this.setter.accept(config, value);
   }
@@ -494,6 +506,18 @@ public record ConfigOption(
     }
     return "config.lumen_tooltips."
         + path.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase(Locale.ROOT);
+  }
+
+  static String serializedName(Enum<?> value) {
+    return value.name().toLowerCase(Locale.ROOT);
+  }
+
+  private static <E extends Enum<E>> E enumValue(String value, E fallback) {
+    try {
+      return Enum.valueOf(fallback.getDeclaringClass(), value.toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException exception) {
+      return fallback;
+    }
   }
 
 }

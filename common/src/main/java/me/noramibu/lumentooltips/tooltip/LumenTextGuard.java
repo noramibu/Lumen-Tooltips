@@ -81,7 +81,7 @@ public final class LumenTextGuard {
     if (output instanceof StyledGuard<?> guarded) {
       return LumenTextGuard.<StyledGuard<T>>cast(guarded).warning(style);
     }
-    return output.accept(style.withColor(ChatFormatting.RED), warningText());
+    return output.accept(warningStyle(style), warningText());
   }
 
   private static boolean enabled() {
@@ -101,6 +101,15 @@ public final class LumenTextGuard {
   private static String warningText() {
     String warning = Language.getInstance().getOrDefault(WARNING_KEY);
     return warning.length() <= 256 ? warning : WARNING_KEY;
+  }
+
+  private static Style warningStyle(Style style) {
+    return Style.EMPTY
+        .withBold(style.isBold())
+        .withItalic(style.isItalic())
+        .withUnderlined(style.isUnderlined())
+        .withStrikethrough(style.isStrikethrough())
+        .withColor(ChatFormatting.RED);
   }
 
   private interface GuardedConsumer {
@@ -142,7 +151,7 @@ public final class LumenTextGuard {
 
     private Optional<T> warning(Style style) {
       return this.budget.takeWarning()
-          ? this.output.accept(style.withColor(ChatFormatting.RED), warningText())
+          ? this.output.accept(warningStyle(style), warningText())
           : Optional.empty();
     }
   }
@@ -182,13 +191,13 @@ public final class LumenTextGuard {
     }
 
     private boolean enterTranslation() {
+      this.translationDepth++;
       if (this.blocked
           || ++this.translationVisits > this.maxTranslationVisits
-          || this.translationDepth >= this.maxTranslationDepth) {
+          || this.translationDepth > this.maxTranslationDepth) {
         this.blocked = true;
         return false;
       }
-      this.translationDepth++;
       return true;
     }
 

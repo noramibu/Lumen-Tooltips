@@ -1,6 +1,5 @@
 package me.noramibu.lumentooltips.config;
 
-import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
@@ -12,12 +11,9 @@ public enum HoldMode {
   SHIFT,
   ALT;
 
-  public String serializedName() {
-    return name().toLowerCase(Locale.ROOT);
-  }
-
   public Component displayName() {
-    return Component.translatable("config.lumen_tooltips.value.hold." + serializedName());
+    return Component.translatable(
+        "config.lumen_tooltips.value.hold." + ConfigOption.serializedName(this));
   }
 
   public boolean isActive(TooltipFlag flag, String keyName) {
@@ -28,13 +24,5 @@ public enum HoldMode {
       case ALT -> Minecraft.getInstance().hasAltDown();
       case ADVANCED -> flag.isAdvanced();
     };
-  }
-
-  public static HoldMode byName(String value, HoldMode fallback) {
-    try {
-      return valueOf(value.toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException exception) {
-      return fallback;
-    }
   }
 }

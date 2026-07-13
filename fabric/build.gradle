@@ -13,7 +13,6 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     implementation files(configurations.faststats, configurations.faststatsCompat)
     compileOnly "org.spongepowered:mixin:${mixin_version}"
-    compileOnly files(rootProject.file("../../ItemEditor/build/libs/Item Editor-26.1-b19.jar"))
 
     faststats("dev.faststats.metrics:fabric:0.27.2") { transitive = false }
     faststats("dev.faststats.metrics:core:0.27.2") { transitive = false }
@@ -21,8 +20,15 @@ dependencies {
     faststatsCompat("dev.faststats.metrics:fabric:0.27.2+mc26.1-26.3") { transitive = false }
 }
 
+def itemEditorCompileClasspath = sourceSets.main.compileClasspath
+
 sourceSets {
+    itemEditorApi {
+        java.srcDir "src/itemEditorApi/java"
+        compileClasspath += itemEditorCompileClasspath
+    }
     main {
+        compileClasspath += itemEditorApi.output
         java {
             srcDir project(":common").file("src/main/java")
         }

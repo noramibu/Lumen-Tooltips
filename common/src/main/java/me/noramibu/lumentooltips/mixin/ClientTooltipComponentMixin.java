@@ -1,6 +1,5 @@
 package me.noramibu.lumentooltips.mixin;
 
-import me.noramibu.lumentooltips.tooltip.LumenFoodTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -15,8 +14,8 @@ public interface ClientTooltipComponentMixin {
   private static void lumenTooltips$createText(
       FormattedCharSequence text,
       CallbackInfoReturnable<ClientTooltipComponent> callbackInfo) {
-    if (text instanceof LumenFoodTooltipComponent foodComponent) {
-      callbackInfo.setReturnValue(foodComponent);
+    if (text instanceof ClientTooltipComponent clientComponent) {
+      callbackInfo.setReturnValue(clientComponent);
     }
   }
 

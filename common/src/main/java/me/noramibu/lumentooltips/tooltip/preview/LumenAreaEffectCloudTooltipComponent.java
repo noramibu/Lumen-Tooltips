@@ -1,6 +1,7 @@
 package me.noramibu.lumentooltips.tooltip.preview;
 
 import java.util.Locale;
+import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.mixin.ParticleEngineAccessor;
 import me.noramibu.lumentooltips.mixin.SingleQuadParticleAccessor;
 import net.minecraft.client.Minecraft;
@@ -24,32 +25,33 @@ import net.minecraft.world.item.alchemy.PotionContents;
 
 final class LumenAreaEffectCloudTooltipComponent
     implements TooltipComponent, ClientTooltipComponent {
-  private static final int WIDTH = 96;
-  private static final int HEIGHT = 72;
   private static final int MAX_PARTICLES = 40;
   private static final float[][] PARTICLE_POSITIONS = createParticlePositions();
   private final AreaEffectCloud cloud;
+  private final LumenConfig.PreviewConfig config;
   private TextureAtlasSprite particleSprite;
   private boolean particleResolved;
 
-  LumenAreaEffectCloudTooltipComponent(AreaEffectCloud cloud) {
+  LumenAreaEffectCloudTooltipComponent(
+      AreaEffectCloud cloud, LumenConfig.PreviewConfig config) {
     this.cloud = cloud;
+    this.config = config;
   }
 
   @Override
   public int getHeight(Font font) {
-    return HEIGHT;
+    return LumenPreviewStyle.entityHeight(this.config) + 8;
   }
 
   @Override
   public int getWidth(Font font) {
-    return WIDTH;
+    return LumenPreviewStyle.entityWidth(this.config) + 16;
   }
 
   @Override
   public void extractImage(
       Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
-    int centerX = x + width / 2;
+    int centerX = x + getWidth(font) / 2;
     int centerY = y + 28;
     int radiusX = Math.clamp(Math.round(this.cloud.getRadius() * 7.0F), 14, 34);
     int radiusY = Math.max(5, radiusX / 3);
@@ -58,7 +60,9 @@ final class LumenAreaEffectCloudTooltipComponent
 
     Minecraft minecraft = Minecraft.getInstance();
     float time =
-        minecraft.level == null
+        this.config.reducedMotion
+            ? 0.0F
+            : minecraft.level == null
             ? 0.0F
             : minecraft.level.getGameTime()
                 + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
@@ -110,9 +114,9 @@ final class LumenAreaEffectCloudTooltipComponent
             "tooltip.lumen_tooltips.area_effect_cloud.radius",
             String.format(Locale.ROOT, "%.1f", this.cloud.getRadius())),
         x + 4,
-        y + HEIGHT - 19,
+        y + getHeight(font) - 19,
         0xFFCCCCCC);
-    graphics.text(font, effectName(potion), x + 4, y + HEIGHT - 10, 0xFFAAAAAA);
+    graphics.text(font, effectName(potion), x + 4, y + getHeight(font) - 10, 0xFFAAAAAA);
   }
 
   private TextureAtlasSprite particleSprite(Minecraft minecraft) {

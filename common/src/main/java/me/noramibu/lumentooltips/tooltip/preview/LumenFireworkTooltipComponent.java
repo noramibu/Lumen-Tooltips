@@ -4,12 +4,15 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import me.noramibu.lumentooltips.config.LumenConfig;
+import me.noramibu.lumentooltips.config.LumenConfigManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -18,16 +21,16 @@ import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.component.Fireworks;
 
 record LumenFireworkTooltipComponent(
-    int flightDuration, List<FireworkExplosion> explosions)
+    int flightDuration,
+    List<FireworkExplosion> explosions,
+    LumenConfig.PreviewConfig config,
+    Identifier style)
     implements TooltipComponent, ClientTooltipComponent {
-  private static final int WIDTH = 180;
-  private static final int PADDING = 4;
   private static final int ROW_HEIGHT = 10;
   private static final int MAX_ROWS = 4;
   private static final int SHAPE_WIDTH = 62;
   private static final int SWATCH_SIZE = 5;
   private static final int SWATCH_GAP = 2;
-  private static final int SIMULATION_HEIGHT = 64;
   private static final int EXPLOSION_INTERVAL = 2;
   private static final int MIN_SPARK_LIFETIME = 48;
   private static final int SPARK_LIFETIME_RANGE = 12;
@@ -38,7 +41,6 @@ record LumenFireworkTooltipComponent(
   private static final float BURST_SCALE = 2.6F;
   private static final float[] FRICTION_POWERS = powers(SPARK_FRICTION);
   private static final float[] FADE_POWERS = powers(0.8F);
-  private static final int PANEL_ACCENT = 0xFFE19BCE;
   private static final int TEXT_COLOR = 0xFFFFFFFF;
   private static final double[][] STAR_POINTS = {
     {0.0, 1.0},
@@ -66,30 +68,44 @@ record LumenFireworkTooltipComponent(
   private static final double[][] LARGE_BALL_VELOCITIES = ballVelocities(0.5, 4, 3);
   private static final double[][] BURST_VELOCITIES = burstVelocities();
 
-  static Optional<TooltipComponent> create(ItemStack stack) {
+  LumenFireworkTooltipComponent(int flightDuration, List<FireworkExplosion> explosions) {
+    this(
+        flightDuration,
+        explosions,
+        LumenConfigManager.current().modules.preview,
+        null);
+  }
+
+  static Optional<TooltipComponent> create(
+      ItemStack stack, LumenConfig.PreviewConfig config) {
     Fireworks fireworks = stack.get(DataComponents.FIREWORKS);
     if (fireworks != null) {
       return Optional.of(
           new LumenFireworkTooltipComponent(
-              fireworks.flightDuration(), fireworks.explosions()));
+              fireworks.flightDuration(),
+              fireworks.explosions(),
+              config,
+              stack.get(DataComponents.TOOLTIP_STYLE)));
     }
     FireworkExplosion explosion = stack.get(DataComponents.FIREWORK_EXPLOSION);
     return explosion == null
         ? Optional.empty()
-        : Optional.of(new LumenFireworkTooltipComponent(-1, List.of(explosion)));
+        : Optional.of(
+            new LumenFireworkTooltipComponent(
+                -1, List.of(explosion), config, stack.get(DataComponents.TOOLTIP_STYLE)));
   }
 
   @Override
   public int getHeight(Font font) {
-    return PADDING * 3
+    return padding() * 3
         + font.lineHeight
-        + SIMULATION_HEIGHT
+        + simulationHeight()
         + Math.min(MAX_ROWS, this.explosions.size()) * ROW_HEIGHT;
   }
 
   @Override
   public int getWidth(Font font) {
-    return WIDTH;
+    return panelWidth();
   }
 
   @Override
@@ -100,8 +116,13 @@ record LumenFireworkTooltipComponent(
   @Override
   public void extractImage(
       Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
-    LumenContainerTooltipComponent.drawPanel(
-        graphics, x, y, WIDTH, getHeight(font), PANEL_ACCENT);
+    LumenPreviewStyle.drawPanel(
+        graphics,
+        x,
+        y,
+        panelWidth(),
+        getHeight(font),
+        this.style);
     Component header =
         this.flightDuration >= 0
             ? Component.translatable(
@@ -111,17 +132,17 @@ record LumenFireworkTooltipComponent(
             : Component.translatable("tooltip.lumen_tooltips.firework.star");
     graphics.text(
         font,
-        font.plainSubstrByWidth(header.getString(), WIDTH - PADDING * 2),
-        x + PADDING,
-        y + PADDING,
+        font.plainSubstrByWidth(header.getString(), panelWidth() - padding() * 2),
+        x + padding(),
+        y + padding(),
         TEXT_COLOR);
 
-    int simulationY = y + PADDING + font.lineHeight;
-    drawSimulation(graphics, x + WIDTH / 2, simulationY);
+    int simulationY = y + padding() + font.lineHeight;
+    drawSimulation(graphics, x + panelWidth() / 2, simulationY);
     int visible = Math.min(MAX_ROWS, this.explosions.size());
-    int rowY = simulationY + SIMULATION_HEIGHT + PADDING;
+    int rowY = simulationY + simulationHeight() + padding();
     for (int index = 0; index < visible; index++) {
-      drawExplosion(font, graphics, this.explosions.get(index), x + PADDING, rowY);
+      drawExplosion(font, graphics, this.explosions.get(index), x + padding(), rowY);
       rowY += ROW_HEIGHT;
     }
   }
@@ -129,7 +150,11 @@ record LumenFireworkTooltipComponent(
   private void drawSimulation(GuiGraphicsExtractor graphics, int centerX, int top) {
     Minecraft minecraft = Minecraft.getInstance();
     float time =
-        minecraft.level == null
+        this.config.reducedMotion
+            ? (this.explosions.isEmpty()
+                ? flightTicks(this.flightDuration) * 0.65F
+                : flightTicks(this.flightDuration) + 8.0F)
+            : minecraft.level == null
             ? 0.0F
             : minecraft.level.getGameTime()
                 + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
@@ -140,9 +165,9 @@ record LumenFireworkTooltipComponent(
             : (this.explosions.size() - 1) * EXPLOSION_INTERVAL + MAX_SPARK_LIFETIME;
     int cycleTicks = Math.max(1, ascentTicks + explosionTicks);
     float cycle = time % cycleTicks;
-    int centerY = top + SIMULATION_HEIGHT / 2;
+    int centerY = top + simulationHeight() / 2;
     if (cycle < ascentTicks) {
-      drawRocket(graphics, centerX, centerY, top + SIMULATION_HEIGHT - 3, cycle, ascentTicks);
+      drawRocket(graphics, centerX, centerY, top + simulationHeight() - 3, cycle, ascentTicks);
       return;
     }
     float explosionTime = cycle - ascentTicks;
@@ -176,7 +201,7 @@ record LumenFireworkTooltipComponent(
     graphics.fill(x - 1, y - 2, x + 2, y + 1, 0xFFFFFFFF);
   }
 
-  private static void drawExplosion(
+  private void drawExplosion(
       GuiGraphicsExtractor graphics,
       FireworkExplosion explosion,
       int centerX,
@@ -524,7 +549,7 @@ record LumenFireworkTooltipComponent(
     return (Mth.murmurHash3Mixer(seed) >>> 8) * 0x1.0p-24F;
   }
 
-  private static void drawExplosion(
+  private void drawExplosion(
       Font font,
       GuiGraphicsExtractor graphics,
       FireworkExplosion explosion,
@@ -533,7 +558,7 @@ record LumenFireworkTooltipComponent(
     String shape = font.plainSubstrByWidth(explosion.shape().getName().getString(), SHAPE_WIDTH);
     graphics.text(font, shape, x, y, TEXT_COLOR);
     int swatchX = x + SHAPE_WIDTH + SWATCH_GAP;
-    int maxX = x + WIDTH - PADDING * 2;
+    int maxX = x + panelWidth() - padding() * 2;
     swatchX = drawSwatches(graphics, explosion.colors(), swatchX, y + 2, maxX);
     if (!explosion.fadeColors().isEmpty() && swatchX + font.width(">") < maxX) {
       graphics.text(font, ">", swatchX, y, TEXT_COLOR);
@@ -565,6 +590,26 @@ record LumenFireworkTooltipComponent(
     return rounded == Math.round(rounded)
         ? Integer.toString(Math.round(rounded))
         : Float.toString(rounded);
+  }
+
+  private int panelWidth() {
+    return switch (this.config.density) {
+      case COMPACT -> 160;
+      case VANILLA -> 180;
+      case COMFORTABLE -> 200;
+    };
+  }
+
+  private int simulationHeight() {
+    return switch (this.config.density) {
+      case COMPACT -> 56;
+      case VANILLA -> 64;
+      case COMFORTABLE -> 72;
+    };
+  }
+
+  private int padding() {
+    return LumenPreviewStyle.padding(this.config);
   }
 
   private record SparkFrame(
