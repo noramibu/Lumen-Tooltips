@@ -3,7 +3,7 @@ package me.noramibu.lumentooltips.tooltip.preview;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.banner.BannerFlagModel;
@@ -50,10 +50,10 @@ final class LumenBannerTooltipComponent implements TooltipComponent, ClientToolt
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     int renderX = x + (width - getWidth(font)) / 2;
-    graphics.bannerPattern(
+    graphics.submitBannerPatternRenderState(
         this.flag,
         this.banner.getColor(),
         this.patterns,

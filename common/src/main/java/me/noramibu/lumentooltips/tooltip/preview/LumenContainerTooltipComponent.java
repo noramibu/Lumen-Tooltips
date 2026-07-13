@@ -2,7 +2,7 @@ package me.noramibu.lumentooltips.tooltip.preview;
 
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -52,8 +52,8 @@ public final class LumenContainerTooltipComponent
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     int panelX = x + Math.max(0, (width - WIDTH) / 2);
     int tint =
         this.config.accents
@@ -100,7 +100,7 @@ public final class LumenContainerTooltipComponent
           256,
           256,
           tint);
-      graphics.text(font, this.title, panelX + 8, y + 6, 0xFF404040, false);
+      graphics.drawString(font, this.title, panelX + 8, y + 6, 0xFF404040, false);
       itemY = y + 18;
     }
     for (int index = 0; index < this.items.length; index++) {
@@ -110,13 +110,13 @@ public final class LumenContainerTooltipComponent
       }
       int itemX = panelX + 8 + index % COLUMNS * 18;
       int rowY = itemY + index / COLUMNS * 18;
-      graphics.item(item, itemX, rowY, 0);
+      graphics.renderItem(item, itemX, rowY, 0);
       if (this.config.showContainerCounts) {
-        graphics.itemDecorations(font, item, itemX, rowY);
+        graphics.renderItemDecorations(font, item, itemX, rowY);
       }
     }
     if (this.hiddenItems > 0) {
-      graphics.text(
+      graphics.drawString(
           font, "+" + this.hiddenItems, panelX + 155, itemY + 42, 0xFFFFFFFF, true);
     }
   }

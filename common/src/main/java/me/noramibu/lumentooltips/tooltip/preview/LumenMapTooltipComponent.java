@@ -4,7 +4,7 @@ import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.MapRenderState;
@@ -56,8 +56,8 @@ final class LumenMapTooltipComponent implements TooltipComponent, ClientTooltipC
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     int panelSize = getWidth(font);
     LumenPreviewStyle.drawPanel(graphics, x, y, panelSize, panelSize, this.style);
     int padding = padding();
@@ -80,7 +80,7 @@ final class LumenMapTooltipComponent implements TooltipComponent, ClientTooltipC
     Minecraft.getInstance()
         .getMapRenderer()
         .extractRenderState(this.id, this.data, this.renderState);
-    graphics.map(this.renderState);
+    graphics.submitMapRenderState(this.renderState);
     graphics.pose().popMatrix();
   }
 

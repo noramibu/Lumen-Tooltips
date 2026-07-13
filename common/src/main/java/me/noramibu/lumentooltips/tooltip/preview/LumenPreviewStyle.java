@@ -1,7 +1,7 @@
 package me.noramibu.lumentooltips.tooltip.preview;
 
 import me.noramibu.lumentooltips.config.LumenConfig;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -54,7 +54,7 @@ final class LumenPreviewStyle {
   }
 
   static void drawPanel(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       int x,
       int y,
       int width,

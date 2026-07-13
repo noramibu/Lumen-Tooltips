@@ -4,7 +4,7 @@ import java.util.List;
 import me.noramibu.lumentooltips.client.LumenItemEditor;
 import me.noramibu.lumentooltips.tooltip.preview.LumenContainerContents;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
 import net.minecraft.client.gui.screens.inventory.PageButton;
@@ -70,13 +70,13 @@ public final class LumenContainerScreen extends ContainerScreen {
   }
 
   @Override
-  protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+  protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
     Component label =
         this.parent instanceof LumenContainerScreen
             ? breadcrumbLabel(this.imageWidth - this.titleLabelX - 35)
             : this.title;
-    graphics.text(this.font, label, this.titleLabelX, this.titleLabelY, -12566464, false);
-    graphics.text(
+    graphics.drawString(this.font, label, this.titleLabelX, this.titleLabelY, -12566464, false);
+    graphics.drawString(
         this.font,
         this.playerInventoryTitle,
         this.inventoryLabelX,

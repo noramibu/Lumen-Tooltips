@@ -49,6 +49,6 @@ public final class LumenClientCommand {
   }
 
   private static void feedback(String key) {
-    Minecraft.getInstance().gui.getChat().addClientSystemMessage(Component.translatable(key));
+    Minecraft.getInstance().gui.getChat().addMessage(Component.translatable(key));
   }
 }

@@ -66,7 +66,7 @@ public abstract class AbstractContainerScreenMixin<T extends AbstractContainerMe
     }
   }
 
-  @Redirect(method = "extractTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;getTooltipFromContainerItem(Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;"))
+  @Redirect(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;getTooltipFromContainerItem(Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;"))
   private List<Component> lumenTooltips$appendItemEditorHint(
       AbstractContainerScreen<?> screen, ItemStack stack) {
     List<Component> tooltip = getTooltipFromContainerItem(stack);

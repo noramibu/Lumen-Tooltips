@@ -6,7 +6,7 @@ import me.noramibu.lumentooltips.mixin.ParticleEngineAccessor;
 import me.noramibu.lumentooltips.mixin.SingleQuadParticleAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SingleQuadParticle;
@@ -49,8 +49,8 @@ final class LumenAreaEffectCloudTooltipComponent
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     int centerX = x + getWidth(font) / 2;
     int centerY = y + 28;
     int radiusX = Math.clamp(Math.round(this.cloud.getRadius() * 7.0F), 14, 34);
@@ -108,7 +108,7 @@ final class LumenAreaEffectCloudTooltipComponent
       }
     }
 
-    graphics.text(
+    graphics.drawString(
         font,
         Component.translatable(
             "tooltip.lumen_tooltips.area_effect_cloud.radius",
@@ -116,7 +116,7 @@ final class LumenAreaEffectCloudTooltipComponent
         x + 4,
         y + getHeight(font) - 19,
         0xFFCCCCCC);
-    graphics.text(font, effectName(potion), x + 4, y + getHeight(font) - 10, 0xFFAAAAAA);
+    graphics.drawString(font, effectName(potion), x + 4, y + getHeight(font) - 10, 0xFFAAAAAA);
   }
 
   private TextureAtlasSprite particleSprite(Minecraft minecraft) {
@@ -133,7 +133,7 @@ final class LumenAreaEffectCloudTooltipComponent
   }
 
   private static void fillEllipse(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       int centerX,
       int centerY,
       int radiusX,

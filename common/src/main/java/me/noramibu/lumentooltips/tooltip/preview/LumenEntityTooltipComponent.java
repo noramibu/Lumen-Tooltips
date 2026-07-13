@@ -4,7 +4,7 @@ import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -75,8 +75,8 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     Minecraft minecraft = Minecraft.getInstance();
     if (minecraft.level == null) {
       return;
@@ -141,7 +141,7 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
       scale = scaleFor(state.boundingBoxWidth, state.boundingBoxHeight);
       centerY = state.boundingBoxHeight / 2.0F;
     }
-    graphics.entity(
+    graphics.submitEntityRenderState(
         state,
         scale,
         new Vector3f(0.0F, centerY, 0.0F),
@@ -153,7 +153,7 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
         renderY + this.height);
   }
 
-  private boolean drawEndPortal(GuiGraphicsExtractor graphics, int x, int y) {
+  private boolean drawEndPortal(GuiGraphics graphics, int x, int y) {
     if (!(this.entity instanceof FallingBlockEntity fallingBlock)) {
       return false;
     }
@@ -177,7 +177,7 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
   }
 
   private void drawVisibleName(
-      Font font, GuiGraphicsExtractor graphics, int x, int y) {
+      Font font, GuiGraphics graphics, int x, int y) {
     var name = this.entity.getCustomName();
     if (name == null) {
       return;
@@ -186,7 +186,7 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     int count = Math.min(lines.size(), (this.height - PADDING * 2) / font.lineHeight);
     int lineY = y + (this.height - count * font.lineHeight) / 2;
     for (int index = 0; index < count; index++) {
-      graphics.centeredText(font, lines.get(index), x + this.width / 2, lineY, 0xFFFFFFFF);
+      graphics.drawCenteredString(font, lines.get(index), x + this.width / 2, lineY, 0xFFFFFFFF);
       lineY += font.lineHeight;
     }
   }

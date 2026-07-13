@@ -85,7 +85,10 @@ final class LumenEntityPreviewResolver {
   }
 
   private static Optional<Entity> createSpawnEggEntity(ItemStack stack, Level level) {
-    EntityType<?> type = SpawnEggItem.getType(stack);
+    if (!(stack.getItem() instanceof SpawnEggItem egg)) {
+      return Optional.empty();
+    }
+    EntityType<?> type = egg.getType(stack);
     if (type == null) {
       return Optional.empty();
     }

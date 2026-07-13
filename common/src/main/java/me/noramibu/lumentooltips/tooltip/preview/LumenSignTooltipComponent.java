@@ -5,12 +5,12 @@ import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractSignRenderer;
-import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
+import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -20,9 +20,9 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.TypedEntityData;
-import net.minecraft.world.level.block.HangingSignBlock;
-import net.minecraft.world.level.block.PlainSignBlock;
+import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.WallHangingSignBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -47,14 +47,13 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
             : AbstractSignRenderer.getDarkColor(text);
     this.config = config;
     this.woodType = SignBlock.getWoodType(block);
-    this.hanging = block instanceof HangingSignBlock;
+    this.hanging =
+        block instanceof CeilingHangingSignBlock || block instanceof WallHangingSignBlock;
     this.model =
         this.hanging
             ? null
-            : StandingSignRenderer.createSignModel(
-                Minecraft.getInstance().getEntityModels(),
-                this.woodType,
-                PlainSignBlock.Attachment.WALL);
+            : SignRenderer.createSignModel(
+                Minecraft.getInstance().getEntityModels(), this.woodType, false);
   }
 
   static Optional<TooltipComponent> create(ItemStack stack, LumenConfig.PreviewConfig config) {
@@ -102,8 +101,8 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     int previewWidth = getWidth(font);
     int previewHeight = getHeight(font);
     int renderX = x + (width - previewWidth) / 2;
@@ -124,7 +123,7 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
           16,
           16);
     } else if (this.model != null) {
-      graphics.sign(
+      graphics.submitSignRenderState(
           this.model,
           previewHeight * 0.65F,
           this.woodType,
@@ -137,7 +136,7 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
   }
 
   private void drawText(
-      Font font, GuiGraphicsExtractor graphics, float centerX, float centerY) {
+      Font font, GuiGraphics graphics, float centerX, float centerY) {
     float scale = switch (this.config.density) {
       case COMPACT -> 0.55F;
       case VANILLA -> 0.65F;
@@ -150,7 +149,7 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
     int startY = -this.lines.length * 5;
     for (int index = 0; index < this.lines.length; index++) {
       FormattedCharSequence line = font.split(this.lines[index], maxWidth).getFirst();
-      graphics.centeredText(font, line, 0, startY + index * 10, this.textColor);
+      graphics.drawCenteredString(font, line, 0, startY + index * 10, this.textColor);
     }
     graphics.pose().popMatrix();
   }

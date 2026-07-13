@@ -2,7 +2,7 @@ package me.noramibu.lumentooltips.tooltip.preview;
 
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
@@ -27,8 +27,8 @@ final class LumenItemVisualTooltipComponent implements TooltipComponent, ClientT
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     int renderX = x + (width - getWidth(font)) / 2;
     float centerX = renderX + getWidth(font) / 2.0F;
     float centerY = y + getHeight(font) / 2.0F;
@@ -39,7 +39,7 @@ final class LumenItemVisualTooltipComponent implements TooltipComponent, ClientT
     graphics.pose().translate(-centerX, -centerY);
     graphics.pose().translate(renderX + padding(), y + padding());
     graphics.pose().scale(scale, scale);
-    graphics.item(this.stack, 0, 0, 0);
+    graphics.renderItem(this.stack, 0, 0, 0);
     graphics.pose().popMatrix();
   }
 

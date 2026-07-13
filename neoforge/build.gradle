@@ -3,23 +3,7 @@ plugins {
     id "net.neoforged.moddev"
 }
 
-configurations {
-    faststats
-    faststatsCompat
-    faststatsCompatSource
-}
-
-sourceSets { faststatsCompat }
-
-def faststatsCompatJar = tasks.register("faststatsCompatJar", Jar) {
-    archiveFileName = "faststats-neoforge-compat.jar"
-    destinationDirectory = layout.buildDirectory.dir("faststats")
-    from({ zipTree(configurations.faststatsCompatSource.singleFile) }) {
-        exclude "META-INF/services/dev.faststats.neoforge.compat.CompatibilityLayer"
-        exclude "dev/faststats/neoforge/compat/v26_1/CompatibilityLayerImpl*.class"
-    }
-    from(sourceSets.faststatsCompat.output)
-}
+configurations { faststats }
 
 neoForge {
     version = neoforge_version
@@ -31,6 +15,7 @@ neoForge {
 
         client {
             client()
+            gameDirectory = project.file("runs/1.21.11-client")
         }
     }
 
@@ -42,41 +27,20 @@ neoForge {
 }
 
 dependencies {
-    implementation files(configurations.faststats, configurations.faststatsCompat)
+    implementation files(configurations.faststats)
     compileOnly "org.spongepowered:mixin:${mixin_version}"
 
-    faststats("dev.faststats.metrics:neoforge:0.27.2") { transitive = false }
-    faststats("dev.faststats.metrics:core:0.27.2") { transitive = false }
-    faststats("dev.faststats.metrics:config:0.27.2") { transitive = false }
-    faststatsCompat files(faststatsCompatJar)
-    faststatsCompatSource("dev.faststats.metrics:neoforge:0.27.2+mc26.1-26.2") { transitive = false }
+    faststats("dev.faststats.metrics:neoforge:0.27.3-pre2+mc1.21.9-1.21.11") { transitive = false }
 }
 
-sourceSets {
-    faststatsCompat {
-        compileClasspath = files(provider {
-            sourceSets.main.compileClasspath.files.findAll {
-                it.name != "faststats-neoforge-compat.jar"
-            }
-        })
-    }
-    main {
-        java {
-            srcDir project(":common").file("src/main/java")
-        }
-        resources {
-            srcDir project(":common").file("src/main/resources")
-        }
-    }
-}
-
-tasks.named("compileFaststatsCompatJava") {
-    dependsOn tasks.named("createMinecraftArtifacts")
+sourceSets.main {
+    java.srcDir project(":common").file("src/main/java")
+    resources.srcDir project(":common").file("src/main/resources")
 }
 
 tasks.named("shadowJar") {
     archiveClassifier = ""
-    configurations = [project.configurations.faststats, project.configurations.faststatsCompat]
+    configurations = [project.configurations.faststats]
     relocate "dev.faststats", "me.noramibu.lumentooltips.lib.faststats"
     mergeServiceFiles()
     exclude "module-info.class"

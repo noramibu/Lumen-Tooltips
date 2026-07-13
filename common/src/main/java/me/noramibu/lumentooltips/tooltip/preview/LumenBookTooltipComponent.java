@@ -7,7 +7,7 @@ import me.noramibu.lumentooltips.config.LumenConfigManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
@@ -93,8 +93,8 @@ record LumenBookTooltipComponent(
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     LumenPreviewStyle.drawPanel(
         graphics,
         x,
@@ -112,7 +112,7 @@ record LumenBookTooltipComponent(
     pose.scale(0.7f, 0.7f);
     int lineY = 0;
     for (FormattedCharSequence line : font.split(this.page, 112)) {
-      graphics.text(font, line, 0, lineY, 0xFF000000, false);
+      graphics.drawString(font, line, 0, lineY, 0xFF000000, false);
       lineY += 8;
     }
     pose.popMatrix();

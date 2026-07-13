@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.PlayerFaceExtractor;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
@@ -77,10 +77,10 @@ public final class LumenBookAuthorTooltipComponent
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
-    graphics.text(font, this.text, x, y, 0xFFFFFFFF);
-    PlayerFaceExtractor.extractRenderState(
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
+    graphics.drawString(font, this.text, x, y, 0xFFFFFFFF);
+    PlayerFaceRenderer.draw(
         graphics, skin(this.author), x + font.width(this.text) + GAP, y, HEAD_SIZE);
   }
 

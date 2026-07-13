@@ -8,7 +8,7 @@ import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -114,8 +114,8 @@ record LumenFireworkTooltipComponent(
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     LumenPreviewStyle.drawPanel(
         graphics,
         x,
@@ -130,7 +130,7 @@ record LumenFireworkTooltipComponent(
                 durationText(this.flightDuration),
                 this.explosions.size())
             : Component.translatable("tooltip.lumen_tooltips.firework.star");
-    graphics.text(
+    graphics.drawString(
         font,
         font.plainSubstrByWidth(header.getString(), panelWidth() - padding() * 2),
         x + padding(),
@@ -147,7 +147,7 @@ record LumenFireworkTooltipComponent(
     }
   }
 
-  private void drawSimulation(GuiGraphicsExtractor graphics, int centerX, int top) {
+  private void drawSimulation(GuiGraphics graphics, int centerX, int top) {
     Minecraft minecraft = Minecraft.getInstance();
     float time =
         this.config.reducedMotion
@@ -182,7 +182,7 @@ record LumenFireworkTooltipComponent(
   }
 
   private static void drawRocket(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       int centerX,
       int endY,
       int startY,
@@ -202,7 +202,7 @@ record LumenFireworkTooltipComponent(
   }
 
   private void drawExplosion(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       FireworkExplosion explosion,
       int centerX,
       int centerY,
@@ -244,7 +244,7 @@ record LumenFireworkTooltipComponent(
   }
 
   private static void drawBall(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       FireworkExplosion explosion,
       int centerX,
       int centerY,
@@ -267,7 +267,7 @@ record LumenFireworkTooltipComponent(
   }
 
   private static void drawShape(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       FireworkExplosion explosion,
       int centerX,
       int centerY,
@@ -319,7 +319,7 @@ record LumenFireworkTooltipComponent(
   }
 
   private static void drawBurst(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       FireworkExplosion explosion,
       int centerX,
       int centerY,
@@ -342,7 +342,7 @@ record LumenFireworkTooltipComponent(
   }
 
   private static void drawSpark(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       FireworkExplosion explosion,
       int centerX,
       int centerY,
@@ -400,7 +400,7 @@ record LumenFireworkTooltipComponent(
   }
 
   private static void drawSparkPoint(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       int centerX,
       int centerY,
       double velocityX,
@@ -551,24 +551,24 @@ record LumenFireworkTooltipComponent(
 
   private void drawExplosion(
       Font font,
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       FireworkExplosion explosion,
       int x,
       int y) {
     String shape = font.plainSubstrByWidth(explosion.shape().getName().getString(), SHAPE_WIDTH);
-    graphics.text(font, shape, x, y, TEXT_COLOR);
+    graphics.drawString(font, shape, x, y, TEXT_COLOR);
     int swatchX = x + SHAPE_WIDTH + SWATCH_GAP;
     int maxX = x + panelWidth() - padding() * 2;
     swatchX = drawSwatches(graphics, explosion.colors(), swatchX, y + 2, maxX);
     if (!explosion.fadeColors().isEmpty() && swatchX + font.width(">") < maxX) {
-      graphics.text(font, ">", swatchX, y, TEXT_COLOR);
+      graphics.drawString(font, ">", swatchX, y, TEXT_COLOR);
       swatchX += font.width(">") + SWATCH_GAP;
       drawSwatches(graphics, explosion.fadeColors(), swatchX, y + 2, maxX);
     }
   }
 
   private static int drawSwatches(
-      GuiGraphicsExtractor graphics, IntList colors, int x, int y, int maxX) {
+      GuiGraphics graphics, IntList colors, int x, int y, int maxX) {
     for (int index = 0; index < colors.size() && x + SWATCH_SIZE <= maxX; index++) {
       graphics.fill(
           x, y, x + SWATCH_SIZE, y + SWATCH_SIZE, 0xFF000000 | colors.getInt(index));

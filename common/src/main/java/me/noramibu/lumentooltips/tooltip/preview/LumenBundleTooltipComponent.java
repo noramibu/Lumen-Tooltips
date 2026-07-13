@@ -2,7 +2,7 @@ package me.noramibu.lumentooltips.tooltip.preview;
 
 import java.util.List;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -42,8 +42,8 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
   public LumenBundleTooltipComponent(BundleContents contents) {
     this.items = contents.itemCopyStream().toList();
     this.rows = Math.max(1, (this.items.size() + COLUMNS - 1) / COLUMNS);
-    this.selectedIndex = contents.getSelectedItemIndex();
-    this.fullness = contents.weight().result().map(Number::floatValue).orElse(0.0F);
+    this.selectedIndex = contents.getSelectedItem();
+    this.fullness = contents.weight().floatValue();
   }
 
   @Override
@@ -62,8 +62,8 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     for (int index = 0; index < this.items.size(); index++) {
       ItemStack item = this.items.get(index);
       if (item.isEmpty()) {
@@ -80,8 +80,8 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
           SLOT_SIZE,
           SLOT_SIZE);
       int itemOffset = 4;
-      graphics.item(item, slotX + itemOffset, slotY + itemOffset, 0);
-      graphics.itemDecorations(font, item, slotX + itemOffset, slotY + itemOffset);
+      graphics.renderItem(item, slotX + itemOffset, slotY + itemOffset, 0);
+      graphics.renderItemDecorations(font, item, slotX + itemOffset, slotY + itemOffset);
       if (selected) {
         graphics.blitSprite(
             RenderPipelines.GUI_TEXTURED,
@@ -101,14 +101,14 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
   }
 
   private void drawSelectedItemTooltip(
-      Font font, GuiGraphicsExtractor graphics, int x, int y, int width) {
+      Font font, GuiGraphics graphics, int x, int y, int width) {
     if (this.selectedIndex < 0 || this.selectedIndex >= this.items.size()) {
       return;
     }
     ItemStack item = this.items.get(this.selectedIndex);
     Component name = item.getStyledHoverName();
     int nameWidth = font.width(name);
-    graphics.tooltip(
+    graphics.renderTooltip(
         font,
         List.of(ClientTooltipComponent.create(name.getVisualOrderText())),
         x + width / 2 - 12 - nameWidth / 2,
@@ -118,7 +118,7 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
   }
 
   private void drawProgressBar(
-      Font font, GuiGraphicsExtractor graphics, int x, int y) {
+      Font font, GuiGraphics graphics, int x, int y) {
     float fullness = Math.clamp(this.fullness, 0.0F, 1.0F);
     int fillWidth = Math.round(fullness * BAR_WIDTH);
     graphics.blitSprite(
@@ -134,7 +134,7 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
         fullness >= 1.0F
             ? BUNDLE_FULL
             : Component.literal(Math.round(fullness * 100.0F) + "%");
-    graphics.centeredText(font, label, x + BAR_WIDTH / 2, y + 3, CommonColors.WHITE);
+    graphics.drawCenteredString(font, label, x + BAR_WIDTH / 2, y + 3, CommonColors.WHITE);
   }
 
 }

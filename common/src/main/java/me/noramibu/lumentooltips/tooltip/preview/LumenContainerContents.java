@@ -35,7 +35,7 @@ public final class LumenContainerContents {
     if (!container.nonEmptyItems().iterator().hasNext()) {
       return Optional.empty();
     }
-    return Optional.of(container.allItemsCopyStream().toList());
+    return Optional.of(container.stream().toList());
   }
 
   static boolean hasStoredContainerItems(ItemStack stack) {

@@ -2,7 +2,7 @@ package me.noramibu.lumentooltips.tooltip;
 
 import java.util.List;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -109,8 +109,8 @@ public final class LumenFoodTooltipComponent
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     if (this.showHunger) {
       drawHunger(font, graphics, x, y);
     }
@@ -121,7 +121,7 @@ public final class LumenFoodTooltipComponent
     }
   }
 
-  private void drawHunger(Font font, GuiGraphicsExtractor graphics, int startX, int y) {
+  private void drawHunger(Font font, GuiGraphics graphics, int startX, int y) {
     int x = startX + (this.hungerIcons - 1) * 9;
     int hunger = Math.abs(this.hunger);
     for (int value = 0; value < this.hungerIcons * 2; value += 2) {
@@ -149,7 +149,7 @@ public final class LumenFoodTooltipComponent
     drawSmallText(font, graphics, this.hungerText, x + 18, y + 2);
   }
 
-  private void drawSaturation(Font font, GuiGraphicsExtractor graphics, int startX, int y) {
+  private void drawSaturation(Font font, GuiGraphics graphics, int startX, int y) {
     int x = startX + (this.saturationIcons - 1) * 7;
     float saturation = Math.abs(this.saturation);
     for (int value = 0; value < this.saturationIcons * 2; value += 2) {
@@ -191,7 +191,7 @@ public final class LumenFoodTooltipComponent
   }
 
   private static void drawSmallText(
-      Font font, GuiGraphicsExtractor graphics, String text, int x, int y) {
+      Font font, GuiGraphics graphics, String text, int x, int y) {
     if (text == null) {
       return;
     }
@@ -199,7 +199,7 @@ public final class LumenFoodTooltipComponent
     pose.pushMatrix();
     pose.translate(x, y);
     pose.scale(0.75F, 0.75F);
-    graphics.text(font, text, 2, 1, 0xFFAAAAAA);
+    graphics.drawString(font, text, 2, 1, 0xFFAAAAAA);
     pose.popMatrix();
   }
 }

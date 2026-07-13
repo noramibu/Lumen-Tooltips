@@ -13,7 +13,7 @@ import me.noramibu.lumentooltips.config.OptionControl;
 import me.noramibu.lumentooltips.config.SaveMode;
 import me.noramibu.lumentooltips.tooltip.preview.LumenTooltipPreview;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -161,9 +161,9 @@ public final class LumenConfigScreen extends Screen {
   }
 
   @Override
-  public void extractRenderState(
-      GuiGraphicsExtractor graphics, int mouseX, int mouseY, float tickDelta) {
-    super.extractRenderState(graphics, mouseX, mouseY, tickDelta);
+  public void render(
+      GuiGraphics graphics, int mouseX, int mouseY, float tickDelta) {
+    super.render(graphics, mouseX, mouseY, tickDelta);
     Component sectionTitle =
         this.showingCategories
             ? Component.translatable("screen.lumen_tooltips.config.categories")
@@ -176,9 +176,9 @@ public final class LumenConfigScreen extends Screen {
             .append(" - ")
             .append(sectionTitle)
             .append(" (" + (this.page + 1) + "/" + this.pageCount + ")");
-    graphics.centeredText(this.font, pageTitle, this.width / 2, 12, TEXT_COLOR);
+    graphics.drawCenteredString(this.font, pageTitle, this.width / 2, 12, TEXT_COLOR);
     if (!this.showingCategories && this.visibleOptionCount == 0) {
-      graphics.centeredText(
+      graphics.drawCenteredString(
           this.font,
           Component.translatable("screen.lumen_tooltips.config.no_results"),
           this.width / 2,
@@ -186,7 +186,7 @@ public final class LumenConfigScreen extends Screen {
           MUTED_TEXT_COLOR);
     }
     for (CategoryPlacement placement : this.categoryPlacements) {
-      graphics.item(placement.category.icon(), placement.x + 3, placement.y + 2, 0);
+      graphics.renderItem(placement.category.icon(), placement.x + 3, placement.y + 2, 0);
     }
     for (OptionWidget option : this.optionWidgets) {
       option.drawIcon(graphics);
@@ -467,7 +467,7 @@ public final class LumenConfigScreen extends Screen {
   }
 
   private void renderPreviewTooltips(
-      GuiGraphicsExtractor graphics, OptionWidget option, int mouseX, int mouseY) {
+      GuiGraphics graphics, OptionWidget option, int mouseX, int mouseY) {
     int lineWidth = Math.clamp((this.width - PREVIEW_MARGIN * 3 - PREVIEW_GAP) / 2, 80, 200);
     LumenConfig currentConfig = LumenConfigManager.current();
     LumenConfig modifiedConfig = currentConfig.copy();
@@ -534,7 +534,7 @@ public final class LumenConfigScreen extends Screen {
   }
 
   private void renderDescriptionTooltip(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       OptionWidget option,
       int mouseX,
       int mouseY,
@@ -559,13 +559,13 @@ public final class LumenConfigScreen extends Screen {
   }
 
   private void renderTooltip(
-      GuiGraphicsExtractor graphics,
+      GuiGraphics graphics,
       List<ClientTooltipComponent> lines,
       int mouseX,
       int mouseY,
       int x,
       int y) {
-    graphics.tooltip(
+    graphics.renderTooltip(
         this.font,
         lines,
         mouseX,
@@ -662,11 +662,11 @@ public final class LumenConfigScreen extends Screen {
       refreshMessage();
     }
 
-    void drawIcon(GuiGraphicsExtractor graphics) {
+    void drawIcon(GuiGraphics graphics) {
       if (!this.icon.isEmpty()
           && LumenConfigScreen.this.font.width(this.control.getMessage()) + 40
               <= this.control.getWidth()) {
-        graphics.item(this.icon, this.control.getX() + 2, this.control.getY() + 2, 0);
+        graphics.renderItem(this.icon, this.control.getX() + 2, this.control.getY() + 2, 0);
       }
     }
 

@@ -7,7 +7,7 @@ import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
@@ -72,8 +72,8 @@ final class LumenPotionTooltipComponent implements TooltipComponent, ClientToolt
   }
 
   @Override
-  public void extractImage(
-      Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
+  public void renderImage(
+      Font font, int x, int y, int width, int height, GuiGraphics graphics) {
     LumenPreviewStyle.drawPanel(
         graphics,
         x,
@@ -91,8 +91,8 @@ final class LumenPotionTooltipComponent implements TooltipComponent, ClientToolt
           ICON_SIZE,
           ICON_SIZE);
       int textX = x + padding() + ICON_SIZE + 4;
-      graphics.text(font, effectName(effect), textX, rowY, 0xFFFFFFFF);
-      graphics.text(font, duration(effect), textX, rowY + font.lineHeight, 0xFFAAAAAA);
+      graphics.drawString(font, effectName(effect), textX, rowY, 0xFFFFFFFF);
+      graphics.drawString(font, duration(effect), textX, rowY + font.lineHeight, 0xFFAAAAAA);
       rowY += rowHeight();
     }
   }

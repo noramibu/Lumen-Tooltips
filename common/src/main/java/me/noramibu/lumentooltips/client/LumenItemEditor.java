@@ -117,7 +117,7 @@ public final class LumenItemEditor {
     Minecraft.getInstance()
         .gui
         .getChat()
-        .addClientSystemMessage(
+        .addMessage(
             Component.translatable("message.lumen_tooltips." + suffix, arguments)
                 .withStyle(color));
   }
