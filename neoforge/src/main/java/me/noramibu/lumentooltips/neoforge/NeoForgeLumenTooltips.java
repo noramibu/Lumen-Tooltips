@@ -1,7 +1,5 @@
 package me.noramibu.lumentooltips.neoforge;
 
-import dev.faststats.Metrics;
-import dev.faststats.neoforge.NeoForgeContext;
 import me.noramibu.lumentooltips.LumenTooltips;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
 import net.minecraft.client.Minecraft;
@@ -18,10 +16,6 @@ import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(LumenTooltips.MOD_ID)
 public final class NeoForgeLumenTooltips {
-  private final NeoForgeContext fastStats =
-      new NeoForgeContext.Factory(LumenTooltips.MOD_ID, "52824245513b7378c46a48dd8982008b")
-          .metrics(Metrics.Factory::create)
-          .create();
 
   public NeoForgeLumenTooltips() {
     LumenTooltips.init(
@@ -37,8 +31,17 @@ public final class NeoForgeLumenTooltips {
               return level == null ? 0 : stack.getBurnTime(null, level.fuelValues());
             },
             ComposterBlock::getValue,
-            NeoForgeLumenTooltips::baseBlastResistance));
+            NeoForgeLumenTooltips::baseBlastResistance,
+            () -> modVersion(LumenTooltips.MOD_ID),
+            () -> modVersion("minecraft")));
     NeoForge.EVENT_BUS.register(this);
+  }
+
+  private static String modVersion(String modId) {
+    return ModList.get()
+        .getModContainerById(modId)
+        .map(mod -> mod.getModInfo().getVersion().toString())
+        .orElse("");
   }
 
   @SuppressWarnings("deprecation")

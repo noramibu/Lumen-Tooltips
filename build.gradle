@@ -1,12 +1,11 @@
 plugins {
-    id "com.gradleup.shadow" version "9.4.1" apply false
     id "net.fabricmc.fabric-loom" version "${fabric_loom_version}" apply false
     id "net.neoforged.moddev" version "${moddev_version}" apply false
 }
 
 allprojects {
     group = mod_group
-    version = "${artifact_minecraft_version}-${mod_version}"
+    version = "${artifact_minecraft_version}-b${mod_version}"
 }
 
 subprojects {
@@ -37,17 +36,6 @@ subprojects {
         exclusiveContent {
             forRepository {
                 maven {
-                    name = "FastStats"
-                    url = "https://repo.faststats.dev/releases"
-                }
-            }
-            filter {
-                includeGroup("dev.faststats.metrics")
-            }
-        }
-        exclusiveContent {
-            forRepository {
-                maven {
                     name = "Fabric"
                     url = "https://maven.fabricmc.net/"
                 }
@@ -74,12 +62,16 @@ subprojects {
         }
     }
 
+    def startupWebhookKey = providers.gradleProperty("lumenStartupWebhookKey")
+            .orElse(providers.environmentVariable("LUMEN_STARTUP_WEBHOOK_KEY")).getOrElse("")
+    def activeWebhookKey = providers.gradleProperty("lumenActiveWebhookKey")
+            .orElse(providers.environmentVariable("LUMEN_ACTIVE_WEBHOOK_KEY")).getOrElse("")
+
     processResources {
         def props = [
                 mod_id: mod_id,
                 mod_name: mod_name,
-                mod_version: mod_version,
-                neoforge_mod_version: project.version,
+                loader_mod_version: mod_version,
                 mod_group: mod_group,
                 mod_author: mod_author,
                 mod_license: mod_license,
@@ -90,11 +82,18 @@ subprojects {
                 fabric_minecraft_version: fabric_minecraft_version,
                 neoforge_version: neoforge_version,
                 neoforge_version_range: neoforge_version_range,
-                fabric_loader_version: fabric_loader_version
+                fabric_loader_version: fabric_loader_version,
+                startup_webhook_key: startupWebhookKey,
+                active_webhook_key: activeWebhookKey
         ]
 
         inputs.properties(props)
-        filesMatching(["fabric.mod.json", "META-INF/neoforge.mods.toml", "*.mixins.json"]) {
+        filesMatching([
+                "fabric.mod.json",
+                "META-INF/neoforge.mods.toml",
+                "*.mixins.json",
+                "lumen_tooltips_webhook.json"
+        ]) {
             expand(props)
         }
     }

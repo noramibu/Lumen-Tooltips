@@ -2,6 +2,7 @@ package me.noramibu.lumentooltips.mixin;
 
 import java.util.List;
 import java.util.Optional;
+import me.noramibu.lumentooltips.tooltip.LumenTextGuard;
 import me.noramibu.lumentooltips.tooltip.layout.LumenTooltipLayout;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -31,11 +32,13 @@ public abstract class GuiGraphicsExtractorMixin {
       int y,
       Identifier background,
       CallbackInfo callbackInfo) {
+    List<Component> safeLines = LumenTextGuard.protectTooltip(lines);
     List<FormattedCharSequence> wrapped =
-        LumenTooltipLayout.wrapTextIfNeeded(font, lines, guiWidth());
-    if (wrapped == null) {
+        LumenTooltipLayout.wrapTextIfNeeded(font, safeLines, guiWidth());
+    if (wrapped == null && safeLines == lines) {
       return;
     }
+    wrapped = wrapped == null ? safeLines.stream().map(Component::getVisualOrderText).toList() : wrapped;
     ((GuiGraphicsExtractor) (Object) this)
         .setTooltipForNextFrame(
             font, wrapped, image, DefaultTooltipPositioner.INSTANCE, x, y, false, background);

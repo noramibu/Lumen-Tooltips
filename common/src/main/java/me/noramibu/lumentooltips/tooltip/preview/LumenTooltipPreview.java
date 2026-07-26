@@ -131,6 +131,9 @@ public final class LumenTooltipPreview {
 
   public static Optional<TooltipComponent> configSample(
       String path, LumenConfig config) {
+    if (!Items.AIR.builtInRegistryHolder().areComponentsBound()) {
+      return Optional.empty();
+    }
     LumenConfig.PreviewConfig preview = config.modules.preview;
     return switch (path) {
       case "modules.preview.shulkers",

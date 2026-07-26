@@ -1,5 +1,6 @@
 package me.noramibu.lumentooltips.tooltip;
 
+import java.util.List;
 import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
 import net.minecraft.ChatFormatting;
@@ -56,6 +57,18 @@ public final class LumenTextGuard {
     InspectionConsumer inspection = new InspectionConsumer();
     component.visit(inspection);
     return !inspection.budget().blocked;
+  }
+
+  public static Component protect(Component component) {
+    return !enabled() || inspect(component)
+        ? component
+        : Component.literal(warningText()).withStyle(warningStyle(component.getStyle()));
+  }
+
+  public static List<Component> protectTooltip(List<Component> tooltip) {
+    return !enabled() || globalEnabled()
+        ? tooltip
+        : tooltip.stream().map(LumenTextGuard::protect).toList();
   }
 
   public static boolean enterTranslation(Object output) {

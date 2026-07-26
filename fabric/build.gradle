@@ -1,23 +1,11 @@
 plugins {
-    id "com.gradleup.shadow"
     id "net.fabricmc.fabric-loom"
-}
-
-configurations {
-    faststats
-    faststatsCompat
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    implementation files(configurations.faststats, configurations.faststatsCompat)
     compileOnly "org.spongepowered:mixin:${mixin_version}"
-
-    faststats("dev.faststats.metrics:fabric:0.27.2") { transitive = false }
-    faststats("dev.faststats.metrics:core:0.27.2") { transitive = false }
-    faststats("dev.faststats.metrics:config:0.27.2") { transitive = false }
-    faststatsCompat("dev.faststats.metrics:fabric:0.27.2+mc26.1-26.3") { transitive = false }
 }
 
 def itemEditorCompileClasspath = sourceSets.main.compileClasspath
@@ -49,12 +37,4 @@ loom {
     }
 }
 
-tasks.named("shadowJar") {
-    archiveClassifier = ""
-    configurations = [project.configurations.faststats, project.configurations.faststatsCompat]
-    relocate "dev.faststats", "me.noramibu.lumentooltips.lib.faststats"
-    mergeServiceFiles()
-    exclude "module-info.class"
-}
-
-tasks.named("jar") { archiveClassifier = "dev" }
+tasks.named("jar") { archiveClassifier = "" }
