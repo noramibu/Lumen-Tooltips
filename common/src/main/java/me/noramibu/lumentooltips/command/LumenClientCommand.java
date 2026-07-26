@@ -3,7 +3,10 @@ package me.noramibu.lumentooltips.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import me.noramibu.lumentooltips.client.screen.LumenScreenOpener;
+import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
+import me.noramibu.lumentooltips.config.SaveMode;
+import me.noramibu.lumentooltips.service.LumenUsageReporter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.network.chat.Component;
@@ -33,15 +36,33 @@ public final class LumenClientCommand {
     } else if (parts.length == 2 && "reload".equals(parts[1])) {
       LumenConfigManager.load();
       feedback("command.lumen_tooltips.reload.success");
+    } else if (parts.length == 2 && "statistics".equals(parts[1])) {
+      toggleStatistics();
     } else {
       feedback(USAGE_KEY);
     }
     return true;
   }
 
+  private static void toggleStatistics() {
+    boolean enabled = !LumenConfigManager.current().modules.statistics.enabled;
+    LumenConfig config = LumenConfigManager.editingCopy();
+    config.modules.statistics.enabled = enabled;
+    LumenConfigManager.apply(config, SaveMode.DISK);
+    feedback(
+        enabled
+            ? "command.lumen_tooltips.statistics.enabled"
+            : "command.lumen_tooltips.statistics.disabled");
+    LumenUsageReporter.logStatus();
+  }
+
   private static void registerAlias(
       CommandDispatcher<ClientSuggestionProvider> dispatcher, String alias) {
-    dispatcher.register(command(alias).then(command("config")).then(command("reload")));
+    dispatcher.register(
+        command(alias)
+            .then(command("config"))
+            .then(command("reload"))
+            .then(command("statistics")));
   }
 
   private static LiteralArgumentBuilder<ClientSuggestionProvider> command(String name) {

@@ -84,7 +84,7 @@ public final class LumenConfigManager {
   }
 
   public static LumenConfig editingCopy() {
-    return current.copy();
+    return GSON.fromJson(GSON.toJson(current), LumenConfig.class);
   }
 
   private static LumenConfig validate(LumenConfig config) {
@@ -141,6 +141,9 @@ public final class LumenConfigManager {
     safe.modules.preview =
         Objects.requireNonNullElseGet(
             safe.modules.preview, LumenConfig.PreviewConfig::new);
+    safe.modules.statistics =
+        Objects.requireNonNullElseGet(
+            safe.modules.statistics, LumenConfig.StatisticsConfig::new);
     if (safe.modules.durability.palette == null) {
       safe.modules.durability.palette = DurabilityPalette.DEFAULT;
     }

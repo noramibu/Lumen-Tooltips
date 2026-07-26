@@ -1,19 +1,13 @@
 plugins {
-    id "com.gradleup.shadow"
     id "net.fabricmc.fabric-loom-remap"
 }
-
-configurations { faststats }
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
-    implementation files(configurations.faststats)
     compileOnly "org.spongepowered:mixin:${mixin_version}"
-
-    faststats("dev.faststats.metrics:fabric:0.27.3-pre2+mc1.21.9-1.21.11") { transitive = false }
 }
 
 sourceSets.main {
@@ -30,20 +24,6 @@ loom {
             runDir("runs/1.21.11-client")
         }
     }
-}
-
-tasks.named("shadowJar") {
-    archiveClassifier = "dev-shadow"
-    configurations = [project.configurations.faststats]
-    relocate "dev.faststats", "me.noramibu.lumentooltips.lib.faststats"
-    mergeServiceFiles()
-    exclude "module-info.class"
-}
-
-tasks.named("remapJar") {
-    dependsOn tasks.named("shadowJar")
-    inputFile.set(tasks.named("shadowJar").flatMap { it.archiveFile })
-    archiveClassifier = ""
 }
 
 tasks.named("jar") { archiveClassifier = "dev" }

@@ -3,6 +3,7 @@ package me.noramibu.lumentooltips.mixin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import me.noramibu.lumentooltips.tooltip.LumenTextGuard;
 import me.noramibu.lumentooltips.tooltip.layout.LumenTooltipLayout;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -45,13 +46,18 @@ public abstract class GuiGraphicsMixin {
       int y,
       @Nullable Identifier background,
       CallbackInfo callbackInfo) {
+    List<Component> safeLines = LumenTextGuard.protectTooltip(lines);
     List<FormattedCharSequence> wrapped =
-        LumenTooltipLayout.wrapTextIfNeeded(font, lines, guiWidth());
-    if (wrapped == null) {
+        LumenTooltipLayout.wrapTextIfNeeded(font, safeLines, guiWidth());
+    if (wrapped == null && safeLines == lines) {
       return;
     }
+    List<FormattedCharSequence> visualLines =
+        wrapped == null
+            ? safeLines.stream().map(Component::getVisualOrderText).toList()
+            : wrapped;
     List<ClientTooltipComponent> components =
-        new ArrayList<>(wrapped.stream().map(ClientTooltipComponent::create).toList());
+        new ArrayList<>(visualLines.stream().map(ClientTooltipComponent::create).toList());
     image.ifPresent(
         component ->
             components.add(

@@ -1,6 +1,7 @@
 package me.noramibu.lumentooltips.tooltip.preview;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.Minecraft;
@@ -31,6 +32,17 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import org.jspecify.annotations.Nullable;
 
 final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltipComponent {
+  private static final float SIGN_BOX_HEIGHT = 102.0F;
+  private static final float SIGN_SCALE = 62.500004F;
+  private static final float SIGN_TEXT_SCALE = 0.9765628F;
+  private static final float SIGN_TEXT_OFFSET = 24.0F;
+  private static final float HANGING_SIZE = 72.0F;
+  private static final float HANGING_TEXT_OFFSET = 49.0F;
+  private static final int SIGN_LINE_HEIGHT = 10;
+  private static final int SIGN_MAX_LINE_WIDTH = 90;
+  private static final int HANGING_LINE_HEIGHT = 9;
+  private static final int HANGING_MAX_LINE_WIDTH = 60;
+
   private final Component[] lines;
   private final int textColor;
   private final LumenConfig.PreviewConfig config;
@@ -111,45 +123,66 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
           Identifier.withDefaultNamespace(
               "textures/gui/hanging_signs/" + this.woodType.name() + ".png");
       int size = Math.min(previewWidth, previewHeight);
+      int textureX = renderX + (previewWidth - size) / 2;
       graphics.blit(
-          RenderPipelines.GUI_TEXTURED,
-          texture,
-          renderX + (previewWidth - size) / 2,
-          y,
-          0,
-          0,
-          size,
-          size,
-          16,
-          16);
-    } else if (this.model != null) {
+          RenderPipelines.GUI_TEXTURED, texture, textureX, y, 0, 0, size, size, 16, 16);
+      float factor = size / HANGING_SIZE;
+      drawText(
+          font,
+          graphics,
+          textureX + size / 2.0F,
+          y + HANGING_TEXT_OFFSET * factor,
+          factor,
+          HANGING_LINE_HEIGHT,
+          HANGING_MAX_LINE_WIDTH);
+      return;
+    }
+    float factor = previewHeight / SIGN_BOX_HEIGHT;
+    if (this.model != null) {
       graphics.submitSignRenderState(
           this.model,
-          previewHeight * 0.65F,
+          SIGN_SCALE * factor,
           this.woodType,
           renderX,
           y,
           renderX + previewWidth,
           y + previewHeight);
     }
-    drawText(font, graphics, renderX + previewWidth / 2.0F, y + previewHeight * 0.52F);
+    drawText(
+        font,
+        graphics,
+        renderX + previewWidth / 2.0F,
+        y + SIGN_TEXT_OFFSET * factor,
+        SIGN_TEXT_SCALE * factor,
+        SIGN_LINE_HEIGHT,
+        SIGN_MAX_LINE_WIDTH);
   }
 
   private void drawText(
-      Font font, GuiGraphics graphics, float centerX, float centerY) {
-    float scale = switch (this.config.density) {
-      case COMPACT -> 0.55F;
-      case VANILLA -> 0.65F;
-      case COMFORTABLE -> 0.75F;
-    };
+      Font font,
+      GuiGraphics graphics,
+      float centerX,
+      float centerY,
+      float scale,
+      int lineHeight,
+      int maxLineWidth) {
     graphics.pose().pushMatrix();
     graphics.pose().translate(centerX, centerY);
     graphics.pose().scale(scale, scale);
-    int maxWidth = Math.round((getWidth(font) - 32) / scale);
-    int startY = -this.lines.length * 5;
+    int startY = -this.lines.length * lineHeight / 2;
     for (int index = 0; index < this.lines.length; index++) {
-      FormattedCharSequence line = font.split(this.lines[index], maxWidth).getFirst();
-      graphics.drawCenteredString(font, line, 0, startY + index * 10, this.textColor);
+      List<FormattedCharSequence> split = font.split(this.lines[index], maxLineWidth);
+      if (split.isEmpty()) {
+        continue;
+      }
+      FormattedCharSequence line = split.getFirst();
+      graphics.drawString(
+          font,
+          line,
+          -font.width(line) / 2,
+          startY + index * lineHeight,
+          this.textColor,
+          false);
     }
     graphics.pose().popMatrix();
   }

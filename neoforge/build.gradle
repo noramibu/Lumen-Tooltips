@@ -1,9 +1,6 @@
 plugins {
-    id "com.gradleup.shadow"
     id "net.neoforged.moddev"
 }
-
-configurations { faststats }
 
 neoForge {
     version = neoforge_version
@@ -27,10 +24,7 @@ neoForge {
 }
 
 dependencies {
-    implementation files(configurations.faststats)
     compileOnly "org.spongepowered:mixin:${mixin_version}"
-
-    faststats("dev.faststats.metrics:neoforge:0.27.3-pre2+mc1.21.9-1.21.11") { transitive = false }
 }
 
 sourceSets.main {
@@ -38,12 +32,4 @@ sourceSets.main {
     resources.srcDir project(":common").file("src/main/resources")
 }
 
-tasks.named("shadowJar") {
-    archiveClassifier = ""
-    configurations = [project.configurations.faststats]
-    relocate "dev.faststats", "me.noramibu.lumentooltips.lib.faststats"
-    mergeServiceFiles()
-    exclude "module-info.class"
-}
-
-tasks.named("jar") { archiveClassifier = "dev" }
+tasks.named("jar") { archiveClassifier = "" }

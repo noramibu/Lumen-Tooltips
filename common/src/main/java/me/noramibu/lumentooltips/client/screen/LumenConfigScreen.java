@@ -52,7 +52,7 @@ public final class LumenConfigScreen extends Screen {
           new Category(
               "keybinds",
               "screen.lumen_tooltips.config.controls",
-              new ItemStack(Items.TRIPWIRE_HOOK)),
+              Items.TRIPWIRE_HOOK),
           category("modules.itemEditor.", "item_editor", Items.WRITABLE_BOOK),
           category("modules.tooltip.", "tooltip", Items.NAME_TAG),
           category("modules.durability.", "durability", Items.ANVIL),
@@ -62,10 +62,11 @@ public final class LumenConfigScreen extends Screen {
           category("modules.navigation.", "navigation", Items.FILLED_MAP),
           category("modules.extraStatistics.", "extra_statistics", Items.COMPARATOR),
           category("modules.safety.", "safety", Items.SHIELD),
+          category("modules.statistics.", "statistics", Items.PAPER),
           new Category(
               "modules.tooltipFlags.",
               "screen.lumen_tooltips.config.tooltip_flags",
-              new ItemStack(Items.REDSTONE_TORCH)),
+              Items.REDSTONE_TORCH),
           category("modules.preview.", "previews", Items.SPYGLASS));
 
   private final Screen parent;
@@ -83,6 +84,9 @@ public final class LumenConfigScreen extends Screen {
   private EditBox searchBox;
   private OptionWidget capturingOption;
   private Category selectedCategory;
+  private LumenConfig previewSource;
+  private ConfigOption previewOption;
+  private LumenConfig modifiedPreview;
 
   public LumenConfigScreen(Screen parent) {
     super(Component.translatable("screen.lumen_tooltips.config.title"));
@@ -470,8 +474,7 @@ public final class LumenConfigScreen extends Screen {
       GuiGraphics graphics, OptionWidget option, int mouseX, int mouseY) {
     int lineWidth = Math.clamp((this.width - PREVIEW_MARGIN * 3 - PREVIEW_GAP) / 2, 80, 200);
     LumenConfig currentConfig = LumenConfigManager.current();
-    LumenConfig modifiedConfig = currentConfig.copy();
-    option.option.cycle(modifiedConfig);
+    LumenConfig modifiedConfig = modifiedPreview(option.option, currentConfig);
     Component currentPreview = option.option.preview(currentConfig);
     Component modifiedPreview = option.option.preview(modifiedConfig);
     TooltipComponent currentSample =
@@ -531,6 +534,18 @@ public final class LumenConfigScreen extends Screen {
     graphics.nextStratum();
     renderTooltip(graphics, current, mouseX, mouseY, currentX, tooltipY);
     renderTooltip(graphics, modified, mouseX, mouseY, modifiedX, tooltipY);
+  }
+
+  private LumenConfig modifiedPreview(ConfigOption option, LumenConfig current) {
+    if (this.previewSource != current
+        || this.previewOption != option
+        || this.modifiedPreview == null) {
+      this.previewSource = current;
+      this.previewOption = option;
+      this.modifiedPreview = LumenConfigManager.editingCopy();
+      option.cycle(this.modifiedPreview);
+    }
+    return this.modifiedPreview;
   }
 
   private void renderDescriptionTooltip(
@@ -882,7 +897,7 @@ public final class LumenConfigScreen extends Screen {
         : option.maxValue();
   }
 
-  private record Category(String prefix, String titleKey, ItemStack icon) {
+  private record Category(String prefix, String titleKey, Item item) {
     boolean contains(String path) {
       return isKeybindCenter()
           ? isCentralControl(path)
@@ -896,11 +911,14 @@ public final class LumenConfigScreen extends Screen {
     Component title() {
       return Component.translatable(this.titleKey);
     }
+
+    ItemStack icon() {
+      return itemIcon(this.item);
+    }
   }
 
   private static Category category(String prefix, String title, Item item) {
-    return new Category(
-        prefix, "screen.lumen_tooltips.config." + title, new ItemStack(item));
+    return new Category(prefix, "screen.lumen_tooltips.config." + title, item);
   }
 
   private static boolean isHoldBinding(ConfigOption option) {
@@ -972,13 +990,19 @@ public final class LumenConfigScreen extends Screen {
           default -> null;
         };
     if (item != null) {
-      return new ItemStack(item);
+      return itemIcon(item);
     }
     return CATEGORIES.stream()
         .filter(category -> category.contains(path))
         .findFirst()
         .map(Category::icon)
         .orElse(ItemStack.EMPTY);
+  }
+
+  private static ItemStack itemIcon(Item item) {
+    return item.builtInRegistryHolder().isBound()
+        ? new ItemStack(item)
+        : ItemStack.EMPTY;
   }
 
   private record CategoryPlacement(Category category, int x, int y) {}

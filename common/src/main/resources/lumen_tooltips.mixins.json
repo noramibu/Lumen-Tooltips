@@ -13,6 +13,7 @@
     "CreativeSlotWrapperAccessor",
     "DefaultTooltipPositionerMixin",
     "EntityAccessor",
+    "GuiMixin",
     "GuiGraphicsMixin",
     "ItemStackTooltipMixin",
     "KeyboardHandlerMixin",

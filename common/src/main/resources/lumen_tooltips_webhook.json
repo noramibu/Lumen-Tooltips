@@ -1,0 +1,4 @@
+{
+  "startup": "${startup_webhook_key}",
+  "active": "${active_webhook_key}"
+}

@@ -4,7 +4,7 @@ license="${mod_license}"
 
 [[mods]]
 modId="${mod_id}"
-version="${neoforge_mod_version}"
+version="${loader_mod_version}"
 displayName="${mod_name}"
 logoFile="icon.png"
 authors="${mod_author}"

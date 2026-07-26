@@ -406,7 +406,11 @@ public final class LumenOptionRegistry {
           ConfigOption.toggle(
               "modules.preview.spawners",
               config -> config.modules.preview.spawners,
-              (config, value) -> config.modules.preview.spawners = value));
+              (config, value) -> config.modules.preview.spawners = value),
+          ConfigOption.toggle(
+              "modules.statistics.enabled",
+              config -> config.modules.statistics.enabled,
+              (config, value) -> config.modules.statistics.enabled = value));
   private static final List<ConfigOption> ACTIVE_OPTIONS =
       Stream.concat(OPTIONS.stream(), tooltipFlagOptions())
           .filter(
