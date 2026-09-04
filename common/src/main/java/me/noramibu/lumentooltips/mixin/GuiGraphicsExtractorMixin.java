@@ -19,34 +19,39 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(GuiGraphicsExtractor.class)
 public abstract class GuiGraphicsExtractorMixin {
-  @Shadow
-  public abstract int guiWidth();
+    @Shadow
+    public abstract int guiWidth();
 
-  @Inject(method = "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V", at = @At("HEAD"), cancellable = true)
-  @SuppressWarnings("DataFlowIssue")
-  private void lumenTooltips$wrapComponentTooltip(
-      Font font,
-      List<Component> lines,
-      Optional<TooltipComponent> image,
-      int x,
-      int y,
-      Identifier background,
-      CallbackInfo callbackInfo) {
-    List<Component> safeLines = LumenTextGuard.protectTooltip(lines);
-    List<FormattedCharSequence> wrapped =
-        LumenTooltipLayout.wrapTextIfNeeded(font, safeLines, guiWidth());
-    if (wrapped == null && safeLines == lines) {
-      return;
+    @Inject(
+            method =
+                    "setTooltipForNextFrame(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;IILnet/minecraft/resources/Identifier;)V",
+            at = @At("HEAD"),
+            cancellable = true)
+    @SuppressWarnings("DataFlowIssue")
+    private void lumenTooltips$wrapComponentTooltip(
+            Font font,
+            List<Component> lines,
+            Optional<TooltipComponent> image,
+            int x,
+            int y,
+            Identifier background,
+            CallbackInfo callbackInfo) {
+        List<Component> safeLines = LumenTextGuard.protectTooltip(lines);
+        List<FormattedCharSequence> wrapped = LumenTooltipLayout.wrapTextIfNeeded(font, safeLines, guiWidth());
+        if (wrapped == null && safeLines == lines) {
+            return;
+        }
+        wrapped = wrapped == null
+                ? safeLines.stream().map(Component::getVisualOrderText).toList()
+                : wrapped;
+        ((GuiGraphicsExtractor) (Object) this)
+                .setTooltipForNextFrame(
+                        font, wrapped, image, DefaultTooltipPositioner.INSTANCE, x, y, false, background);
+        callbackInfo.cancel();
     }
-    wrapped = wrapped == null ? safeLines.stream().map(Component::getVisualOrderText).toList() : wrapped;
-    ((GuiGraphicsExtractor) (Object) this)
-        .setTooltipForNextFrame(
-            font, wrapped, image, DefaultTooltipPositioner.INSTANCE, x, y, false, background);
-    callbackInfo.cancel();
-  }
 
-  @Inject(method = "extractDeferredElements", at = @At("RETURN"))
-  private void lumenTooltips$finishTooltipFrame(CallbackInfo callbackInfo) {
-    LumenTooltipLayout.finishFrame();
-  }
+    @Inject(method = "extractDeferredElements", at = @At("RETURN"))
+    private void lumenTooltips$finishTooltipFrame(CallbackInfo callbackInfo) {
+        LumenTooltipLayout.finishFrame();
+    }
 }

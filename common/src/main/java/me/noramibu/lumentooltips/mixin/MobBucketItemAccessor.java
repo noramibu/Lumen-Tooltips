@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(MobBucketItem.class)
 public interface MobBucketItemAccessor {
-  @Accessor("type")
-  EntityType<? extends Mob> lumenTooltips$getType();
+    @Accessor("type")
+    EntityType<? extends Mob> lumenTooltips$getType();
 }

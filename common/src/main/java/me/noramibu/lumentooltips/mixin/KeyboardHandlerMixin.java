@@ -11,11 +11,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(KeyboardHandler.class)
 public abstract class KeyboardHandlerMixin {
-  @Inject(method = "keyPress", at = @At("HEAD"))
-  private void lumenTooltips$releaseSaveKey(
-      long window, int action, KeyEvent event, CallbackInfo callbackInfo) {
-    if (action == InputConstants.RELEASE) {
-      LumenItemEditor.keyReleased(event);
+    @Inject(method = "keyPress", at = @At("HEAD"))
+    private void lumenTooltips$releaseSaveKey(long window, int action, KeyEvent event, CallbackInfo callbackInfo) {
+        if (action == InputConstants.RELEASE) {
+            LumenItemEditor.keyReleased(event);
+        }
     }
-  }
 }

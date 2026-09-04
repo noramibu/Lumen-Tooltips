@@ -9,14 +9,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(ParticleEngine.class)
 public interface ParticleEngineAccessor {
-  @Invoker("makeParticle")
-  @Nullable
-  <T extends ParticleOptions> Particle lumenTooltips$makeParticle(
-      T options,
-      double x,
-      double y,
-      double z,
-      double velocityX,
-      double velocityY,
-      double velocityZ);
+    @Invoker("makeParticle")
+    @Nullable
+    <T extends ParticleOptions> Particle lumenTooltips$makeParticle(
+            T options, double x, double y, double z, double velocityX, double velocityY, double velocityZ);
 }

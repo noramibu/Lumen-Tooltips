@@ -12,17 +12,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(OptionsScreen.class)
 public abstract class OptionsScreenMixin extends Screen {
-  protected OptionsScreenMixin(Component title) {
-    super(title);
-  }
+    protected OptionsScreenMixin(Component title) {
+        super(title);
+    }
 
-  @Inject(method = "init", at = @At("RETURN"))
-  private void lumenTooltips$addConfigButton(CallbackInfo callbackInfo) {
-    this.addRenderableWidget(
-        Button.builder(
-                Component.translatable("screen.lumen_tooltips.config.open"),
-                button -> LumenScreenOpener.openConfig(this))
-            .bounds(8, 8, 100, 20)
-            .build());
-  }
+    @Inject(method = "init", at = @At("RETURN"))
+    private void lumenTooltips$addConfigButton(CallbackInfo callbackInfo) {
+        this.addRenderableWidget(Button.builder(
+                        Component.translatable("screen.lumen_tooltips.config.open"),
+                        button -> LumenScreenOpener.openConfig(this))
+                .bounds(8, 8, 100, 20)
+                .build());
+    }
 }

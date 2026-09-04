@@ -10,23 +10,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DefaultTooltipPositioner.class)
 public abstract class DefaultTooltipPositionerMixin {
-  @Inject(method = "positionTooltip", at = @At("RETURN"), cancellable = true)
-  private void lumenTooltips$positionTooltip(
-      int screenWidth,
-      int screenHeight,
-      int mouseX,
-      int mouseY,
-      int tooltipWidth,
-      int tooltipHeight,
-      CallbackInfoReturnable<Vector2ic> callbackInfo) {
-    callbackInfo.setReturnValue(
-        LumenTooltipLayout.position(
-            callbackInfo.getReturnValue(),
-            screenWidth,
-            screenHeight,
-            mouseX,
-            mouseY,
-            tooltipWidth,
-            tooltipHeight));
-  }
+    @Inject(method = "positionTooltip", at = @At("RETURN"), cancellable = true)
+    private void lumenTooltips$positionTooltip(
+            int screenWidth,
+            int screenHeight,
+            int mouseX,
+            int mouseY,
+            int tooltipWidth,
+            int tooltipHeight,
+            CallbackInfoReturnable<Vector2ic> callbackInfo) {
+        callbackInfo.setReturnValue(LumenTooltipLayout.position(
+                callbackInfo.getReturnValue(), screenWidth, screenHeight, mouseX, mouseY, tooltipWidth, tooltipHeight));
+    }
 }

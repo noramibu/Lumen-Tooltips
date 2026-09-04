@@ -11,15 +11,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerMixin {
-  @Inject(method = "handleCommands", at = @At("TAIL"))
-  @SuppressWarnings("DataFlowIssue")
-  private void lumenTooltips$registerClientCommands(CallbackInfo callbackInfo) {
-    LumenClientCommand.register(((ClientPacketListener) (Object) this).getCommands());
-  }
+    @Inject(method = "handleCommands", at = @At("TAIL"))
+    @SuppressWarnings("DataFlowIssue")
+    private void lumenTooltips$registerClientCommands(CallbackInfo callbackInfo) {
+        LumenClientCommand.register(((ClientPacketListener) (Object) this).getCommands());
+    }
 
-  @Inject(method = "handleMapItemData", at = @At("TAIL"))
-  private void lumenTooltips$invalidateMapStats(
-      ClientboundMapItemDataPacket packet, CallbackInfo callbackInfo) {
-    LumenNavigationTooltip.invalidateMap(packet.mapId());
-  }
+    @Inject(method = "handleMapItemData", at = @At("TAIL"))
+    private void lumenTooltips$invalidateMapStats(ClientboundMapItemDataPacket packet, CallbackInfo callbackInfo) {
+        LumenNavigationTooltip.invalidateMap(packet.mapId());
+    }
 }

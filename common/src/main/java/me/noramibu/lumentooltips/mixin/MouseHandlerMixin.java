@@ -9,11 +9,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MouseHandler.class)
 public abstract class MouseHandlerMixin {
-  @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
-  private void lumenTooltips$scrollTooltip(
-      long window, double horizontalAmount, double verticalAmount, CallbackInfo callbackInfo) {
-    if (LumenTooltipLayout.scroll(verticalAmount)) {
-      callbackInfo.cancel();
+    @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
+    private void lumenTooltips$scrollTooltip(
+            long window, double horizontalAmount, double verticalAmount, CallbackInfo callbackInfo) {
+        if (LumenTooltipLayout.scroll(verticalAmount)) {
+            callbackInfo.cancel();
+        }
     }
-  }
 }

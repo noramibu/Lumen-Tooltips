@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(SingleQuadParticle.class)
 public interface SingleQuadParticleAccessor {
-  @Accessor("sprite")
-  TextureAtlasSprite lumenTooltips$getSprite();
+    @Accessor("sprite")
+    TextureAtlasSprite lumenTooltips$getSprite();
 }

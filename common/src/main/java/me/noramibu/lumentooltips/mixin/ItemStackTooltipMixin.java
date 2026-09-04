@@ -23,42 +23,39 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = ItemStack.class, priority = 1500)
 public abstract class ItemStackTooltipMixin {
-  @ModifyVariable(method = "getTooltipLines", at = @At("STORE"), ordinal = 0)
-  private TooltipDisplay lumenTooltips$showConfiguredComponents(TooltipDisplay display) {
-    LumenConfig.TooltipConfig config = LumenConfigManager.current().modules.tooltip;
-    if (!config.ignoreHideTooltip && config.ignoredHiddenComponents.isEmpty()) {
-      return display;
+    @ModifyVariable(method = "getTooltipLines", at = @At("STORE"), ordinal = 0)
+    private TooltipDisplay lumenTooltips$showConfiguredComponents(TooltipDisplay display) {
+        LumenConfig.TooltipConfig config = LumenConfigManager.current().modules.tooltip;
+        if (!config.ignoreHideTooltip && config.ignoredHiddenComponents.isEmpty()) {
+            return display;
+        }
+        TooltipDisplay visible = config.ignoreHideTooltip && display.hideTooltip()
+                ? new TooltipDisplay(false, display.hiddenComponents())
+                : display;
+        for (DataComponentType<?> component : display.hiddenComponents()) {
+            if (config.ignoredHiddenComponents.contains(
+                    BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(component).toString())) {
+                visible = visible.withHidden(component, false);
+            }
+        }
+        return visible;
     }
-    TooltipDisplay visible =
-        config.ignoreHideTooltip && display.hideTooltip()
-            ? new TooltipDisplay(false, display.hiddenComponents())
-            : display;
-    for (DataComponentType<?> component : display.hiddenComponents()) {
-      if (config.ignoredHiddenComponents.contains(
-          BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(component).toString())) {
-        visible = visible.withHidden(component, false);
-      }
-    }
-    return visible;
-  }
 
-  @Inject(method = "getTooltipLines", at = @At("RETURN"))
-  @SuppressWarnings("DataFlowIssue")
-  private void lumenTooltips$appendTooltip(
-      Item.TooltipContext context,
-      Player player,
-      TooltipFlag flag,
-      CallbackInfoReturnable<List<Component>> callbackInfo) {
-    LumenTooltipAppender.append(
-        context, (ItemStack) (Object) this, player, callbackInfo.getReturnValue(), flag);
-  }
-
-  @Inject(method = "getTooltipImage", at = @At("HEAD"), cancellable = true)
-  private void lumenTooltips$getTooltipImage(
-      CallbackInfoReturnable<Optional<TooltipComponent>> callbackInfo) {
-    Optional<TooltipComponent> preview = LumenTooltipPreview.create((ItemStack) (Object) this);
-    if (preview.isPresent()) {
-      callbackInfo.setReturnValue(preview);
+    @Inject(method = "getTooltipLines", at = @At("RETURN"))
+    @SuppressWarnings("DataFlowIssue")
+    private void lumenTooltips$appendTooltip(
+            Item.TooltipContext context,
+            Player player,
+            TooltipFlag flag,
+            CallbackInfoReturnable<List<Component>> callbackInfo) {
+        LumenTooltipAppender.append(context, (ItemStack) (Object) this, player, callbackInfo.getReturnValue(), flag);
     }
-  }
+
+    @Inject(method = "getTooltipImage", at = @At("HEAD"), cancellable = true)
+    private void lumenTooltips$getTooltipImage(CallbackInfoReturnable<Optional<TooltipComponent>> callbackInfo) {
+        Optional<TooltipComponent> preview = LumenTooltipPreview.create((ItemStack) (Object) this);
+        if (preview.isPresent()) {
+            callbackInfo.setReturnValue(preview);
+        }
+    }
 }

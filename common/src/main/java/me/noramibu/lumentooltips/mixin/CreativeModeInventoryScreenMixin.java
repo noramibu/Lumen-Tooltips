@@ -13,20 +13,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CreativeModeInventoryScreen.class)
 public abstract class CreativeModeInventoryScreenMixin
-    extends AbstractContainerScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
-  protected CreativeModeInventoryScreenMixin(
-      CreativeModeInventoryScreen.ItemPickerMenu menu, Inventory inventory, Component title) {
-    super(menu, inventory, title);
-  }
-
-  @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
-  private void lumenTooltips$openHoveredItem(
-      KeyEvent event, CallbackInfoReturnable<Boolean> callbackInfo) {
-    if (this.hoveredSlot != null
-        && this.hoveredSlot.hasItem()
-        && this.menu.getCarried().isEmpty()
-        && LumenContainerOpener.tryOpen(this.hoveredSlot.getItem(), event)) {
-      callbackInfo.setReturnValue(true);
+        extends AbstractContainerScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
+    protected CreativeModeInventoryScreenMixin(
+            CreativeModeInventoryScreen.ItemPickerMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title);
     }
-  }
+
+    @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    private void lumenTooltips$openHoveredItem(KeyEvent event, CallbackInfoReturnable<Boolean> callbackInfo) {
+        if (this.hoveredSlot != null
+                && this.hoveredSlot.hasItem()
+                && this.menu.getCarried().isEmpty()
+                && LumenContainerOpener.tryOpen(this.hoveredSlot.getItem(), event)) {
+            callbackInfo.setReturnValue(true);
+        }
+    }
 }
