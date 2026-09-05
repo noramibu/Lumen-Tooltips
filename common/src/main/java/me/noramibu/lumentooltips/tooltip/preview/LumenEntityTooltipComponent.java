@@ -1,5 +1,6 @@
 package me.noramibu.lumentooltips.tooltip.preview;
 
+import com.mojang.logging.LogUtils;
 import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import net.minecraft.client.Minecraft;
@@ -42,6 +43,7 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     private final int width;
     private final int height;
     private final boolean reducedMotion;
+    private boolean renderFailed;
 
     private LumenEntityTooltipComponent(Entity entity, LumenConfig.PreviewConfig config) {
         this.entity = entity;
@@ -76,7 +78,7 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
     @Override
     public void extractImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null) {
+        if (minecraft.level == null || this.renderFailed) {
             return;
         }
         int renderX = x + (width - this.width) / 2;
@@ -94,8 +96,13 @@ public final class LumenEntityTooltipComponent implements TooltipComponent, Clie
         this.entity.tickCount = (int) animation;
         EntityRenderState state;
         try {
-            state = minecraft.getEntityRenderDispatcher().extractEntity(this.entity, animation - this.entity.tickCount);
+            state = minecraft
+                    .getEntityRenderDispatcher()
+                    .getRenderer(this.entity)
+                    .createRenderState(this.entity, animation - this.entity.tickCount);
         } catch (RuntimeException exception) {
+            this.renderFailed = true;
+            LogUtils.getLogger().warn("[Lumen Tooltips] Entity preview failed", exception);
             return;
         }
 

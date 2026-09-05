@@ -91,7 +91,7 @@ final class LumenEntityPreviewResolver {
         if (type == null) {
             return Optional.empty();
         }
-        Entity entity = type.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        Entity entity = type.create(level, new EntitySpawnRequest(EntitySpawnReason.SPAWN_ITEM_USE, true));
         if (entity == null) {
             return Optional.empty();
         }
@@ -199,6 +199,8 @@ final class LumenEntityPreviewResolver {
     }
 
     private static Entity prepare(Entity entity) {
+        // Detached previews never enter the world's ID assignment path.
+        entity.setId(-1);
         entity.snapTo(0.0, 0.0, 0.0, 180.0F, 0.0F);
         entity.setYHeadRot(180.0F);
         entity.setYBodyRot(180.0F);
