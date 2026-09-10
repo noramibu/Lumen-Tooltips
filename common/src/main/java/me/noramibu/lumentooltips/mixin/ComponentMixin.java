@@ -29,7 +29,8 @@ public interface ComponentMixin {
     private <T> void lumenTooltips$inspectPlainText(
             FormattedText.ContentConsumer<T> output, CallbackInfoReturnable<Optional<T>> callbackInfo) {
         Component component = (Component) this;
-        if (LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component)) {
+        if (!LumenTextGuard.enterComponent(output, component)
+                || LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component, output)) {
             callbackInfo.setReturnValue(LumenTextGuard.reject(output));
         }
     }
@@ -55,8 +56,28 @@ public interface ComponentMixin {
             Style style,
             CallbackInfoReturnable<Optional<T>> callbackInfo) {
         Component component = (Component) this;
-        if (LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component)) {
+        if (!LumenTextGuard.enterComponent(output, component)
+                || LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component, output)) {
             callbackInfo.setReturnValue(LumenTextGuard.reject(output, style));
         }
+    }
+
+    @Inject(
+            method = "visit(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;",
+            at = @At("RETURN"))
+    private <T> void lumenTooltips$finishPlainText(
+            FormattedText.ContentConsumer<T> output, CallbackInfoReturnable<Optional<T>> callbackInfo) {
+        LumenTextGuard.exitComponent(output);
+    }
+
+    @Inject(
+            method =
+                    "visit(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;",
+            at = @At("RETURN"))
+    private <T> void lumenTooltips$finishStyledText(
+            FormattedText.StyledContentConsumer<T> output,
+            Style style,
+            CallbackInfoReturnable<Optional<T>> callbackInfo) {
+        LumenTextGuard.exitComponent(output);
     }
 }

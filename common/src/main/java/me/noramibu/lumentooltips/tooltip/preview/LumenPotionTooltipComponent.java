@@ -11,6 +11,7 @@ import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -88,11 +89,15 @@ final class LumenPotionTooltipComponent implements TooltipComponent, ClientToolt
 
     private Component effectName(MobEffectInstance effect) {
         Component name = effect.getEffect().value().getDisplayName();
-        return effect.getAmplifier() == 0
-                ? name
-                : name.copy()
-                        .append(CommonComponents.SPACE)
-                        .append(Component.translatable("enchantment.level." + (effect.getAmplifier() + 1)));
+        int amplifier = effect.getAmplifier();
+        if (amplifier == 0) {
+            return name;
+        }
+        String key = "enchantment.level." + (amplifier + 1);
+        Component level = amplifier < 5 && Language.getInstance().has(key)
+                ? Component.translatable(key)
+                : Component.literal(Integer.toString(amplifier));
+        return name.copy().append(CommonComponents.SPACE).append(level);
     }
 
     private Component duration(MobEffectInstance effect) {

@@ -1,5 +1,6 @@
 package me.noramibu.lumentooltips.tooltip;
 
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
@@ -13,6 +14,7 @@ import net.minecraft.util.Unit;
 
 public final class LumenTextGuard {
     private static final String WARNING_KEY = "tooltip.lumen_tooltips.unsafe_text";
+    private static final String TRANSLATION_WARNING_KEY = "tooltip.lumen_tooltips.translation_crash_prevented";
 
     private LumenTextGuard() {}
 
@@ -42,16 +44,22 @@ public final class LumenTextGuard {
                 && guarded.budget().beginInspection();
     }
 
-    public static boolean inspect(Component component) {
+    public static boolean inspect(Component component, Object output) {
         InspectionConsumer inspection = new InspectionConsumer();
         component.visit(inspection);
+        if (inspection.budget().blocked && output instanceof GuardedConsumer guarded) {
+            guarded.budget().translationFailure = inspection.budget().translationFailure;
+        }
         return !inspection.budget().blocked;
     }
 
     public static Component protect(Component component) {
-        return !enabled() || inspect(component)
-                ? component
-                : Component.literal(warningText()).withStyle(warningStyle(component.getStyle()));
+        if (!enabled()) return component;
+        InspectionConsumer inspection = new InspectionConsumer();
+        component.visit(inspection);
+        return inspection.budget().blocked
+                ? Component.literal(warningText(inspection.budget())).withStyle(warningStyle(component.getStyle()))
+                : component;
     }
 
     public static List<Component> protectTooltip(List<Component> tooltip) {
@@ -62,6 +70,16 @@ public final class LumenTextGuard {
 
     public static boolean enterTranslation(Object output) {
         return !(output instanceof GuardedConsumer guarded) || guarded.budget().enterTranslation();
+    }
+
+    public static boolean enterComponent(Object output, Component component) {
+        return !(output instanceof GuardedConsumer guarded) || guarded.budget().enterComponent(component);
+    }
+
+    public static void exitComponent(Object output) {
+        if (output instanceof GuardedConsumer guarded) {
+            guarded.budget().exitComponent();
+        }
     }
 
     public static void exitTranslation(Object output) {
@@ -99,8 +117,16 @@ public final class LumenTextGuard {
     }
 
     private static String warningText() {
-        String warning = Language.getInstance().getOrDefault(WARNING_KEY);
-        return warning.length() <= 256 ? warning : WARNING_KEY;
+        return warningText(WARNING_KEY);
+    }
+
+    private static String warningText(Budget budget) {
+        return warningText(budget.translationFailure ? TRANSLATION_WARNING_KEY : WARNING_KEY);
+    }
+
+    private static String warningText(String key) {
+        String warning = Language.getInstance().getOrDefault(key);
+        return warning.length() <= 256 ? warning : key;
     }
 
     private static Style warningStyle(Style style) {
@@ -135,7 +161,7 @@ public final class LumenTextGuard {
         }
 
         private Optional<T> warning() {
-            return this.budget.takeWarning() ? this.output.accept(warningText()) : Optional.empty();
+            return this.budget.takeWarning() ? this.output.accept(warningText(this.budget)) : Optional.empty();
         }
     }
 
@@ -148,26 +174,46 @@ public final class LumenTextGuard {
 
         private Optional<T> warning(Style style) {
             return this.budget.takeWarning()
-                    ? this.output.accept(warningStyle(style), warningText())
+                    ? this.output.accept(warningStyle(style), warningText(this.budget))
                     : Optional.empty();
         }
     }
 
-    private static final class Budget {
+    static final class Budget {
         private final int maxTranslationDepth;
         private final int maxTranslationVisits;
+        private final boolean limitCharacters;
         private int remainingCharacters;
+        // Includes literal arguments inside translations, such as formatted /data output.
+        private int remainingLiteralCharacters = 524_288;
+        private final IdentityHashMap<Object, Boolean> visitedComponents = new IdentityHashMap<>();
+        private final boolean[] repeatedComponents = new boolean[128];
+        private int componentDepth;
+        private int componentVisits;
         private int translationDepth;
         private int translationVisits;
         private boolean blocked;
+        private boolean translationFailure;
         private boolean inspected;
         private boolean warned;
 
         private Budget() {
-            var safety = LumenConfigManager.current().modules.safety;
-            this.remainingCharacters = safety.maxCharacters;
-            this.maxTranslationDepth = safety.maxTranslationDepth;
-            this.maxTranslationVisits = safety.maxTranslationVisits;
+            this(
+                    LumenConfigManager.current().modules.safety.textLengthLimit,
+                    LumenConfigManager.current().modules.safety.maxCharacters,
+                    LumenConfigManager.current().modules.safety.maxTranslationDepth,
+                    LumenConfigManager.current().modules.safety.maxTranslationVisits);
+        }
+
+        Budget(int characters, int depth, int visits) {
+            this(true, characters, depth, visits);
+        }
+
+        private Budget(boolean limitCharacters, int characters, int depth, int visits) {
+            this.limitCharacters = limitCharacters;
+            this.remainingCharacters = characters;
+            this.maxTranslationDepth = depth;
+            this.maxTranslationVisits = visits;
         }
 
         private boolean beginInspection() {
@@ -178,27 +224,55 @@ public final class LumenTextGuard {
             return true;
         }
 
-        private boolean accept(int length) {
-            if (this.blocked || length > this.remainingCharacters) {
+        boolean accept(int length) {
+            if (this.blocked) return false;
+            if (!this.limitCharacters) return true;
+            // Identity distinguishes repeated arguments from separate, equal-colored art cells.
+            boolean expanded = this.translationDepth > 0
+                    && (this.componentDepth == 0 || this.repeatedComponents[this.componentDepth - 1]);
+            if (length > this.remainingLiteralCharacters) {
                 this.blocked = true;
                 return false;
             }
-            this.remainingCharacters -= length;
+            if (expanded && length > this.remainingCharacters) {
+                this.blocked = this.translationFailure = true;
+                return false;
+            }
+            if (expanded) {
+                this.remainingCharacters -= length;
+            }
+            this.remainingLiteralCharacters -= length;
             return true;
         }
 
-        private boolean enterTranslation() {
+        boolean enterComponent(Object component) {
+            this.componentDepth++;
+            if (++this.componentVisits > 262_144 || this.componentDepth > 128) {
+                this.blocked = true;
+            }
+            if (!this.blocked) {
+                this.repeatedComponents[this.componentDepth - 1] =
+                        this.visitedComponents.put(component, Boolean.TRUE) != null;
+            }
+            return !this.blocked;
+        }
+
+        void exitComponent() {
+            this.componentDepth--;
+        }
+
+        boolean enterTranslation() {
             this.translationDepth++;
-            if (this.blocked
-                    || ++this.translationVisits > this.maxTranslationVisits
+            if (this.blocked) return false;
+            if (++this.translationVisits > this.maxTranslationVisits
                     || this.translationDepth > this.maxTranslationDepth) {
-                this.blocked = true;
+                this.blocked = this.translationFailure = true;
                 return false;
             }
             return true;
         }
 
-        private void exitTranslation() {
+        void exitTranslation() {
             if (this.translationDepth > 0) {
                 this.translationDepth--;
             }

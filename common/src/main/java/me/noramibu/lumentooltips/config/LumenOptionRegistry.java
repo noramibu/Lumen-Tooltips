@@ -56,6 +56,10 @@ public final class LumenOptionRegistry {
                     "modules.safety.globalComponentVisitGuard",
                     config -> config.modules.safety.globalComponentVisitGuard,
                     (config, value) -> config.modules.safety.globalComponentVisitGuard = value),
+            ConfigOption.toggle(
+                    "modules.safety.textLengthLimit",
+                    config -> config.modules.safety.textLengthLimit,
+                    (config, value) -> config.modules.safety.textLengthLimit = value),
             ConfigOption.integer(
                     "modules.safety.maxCharacters",
                     256,
@@ -477,9 +481,11 @@ public final class LumenOptionRegistry {
             case "modules.tooltip.showEditItemHint", "modules.tooltip.showSaveItemHint" ->
                 config.modules.tooltip.showControlHints && LumenItemEditor.isAvailable();
             case "modules.safety.globalComponentVisitGuard",
-                    "modules.safety.maxCharacters",
                     "modules.safety.maxTranslationDepth",
                     "modules.safety.maxTranslationVisits" -> config.modules.safety.translationCrashFix;
+            case "modules.safety.textLengthLimit" -> config.modules.safety.translationCrashFix;
+            case "modules.safety.maxCharacters" ->
+                config.modules.safety.translationCrashFix && config.modules.safety.textLengthLimit;
             case "modules.preview.activation",
                     "modules.preview.density",
                     "modules.preview.accents",

@@ -96,6 +96,7 @@ public final class LumenConfig {
     public static final class SafetyConfig {
         public boolean translationCrashFix = true;
         public boolean globalComponentVisitGuard = true;
+        public boolean textLengthLimit = true;
         public int maxCharacters = 8192;
         public int maxTranslationDepth = 64;
         public int maxTranslationVisits = 2048;
