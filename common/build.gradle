@@ -9,3 +9,19 @@ neoForge {
 dependencies {
     compileOnly "org.spongepowered:mixin:${mixin_version}"
 }
+
+sourceSets.test {
+    compileClasspath += sourceSets.main.compileClasspath
+    runtimeClasspath += sourceSets.main.compileClasspath
+}
+
+tasks.register("textBudgetRegression", JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = "me.noramibu.lumentooltips.tooltip.TextBudgetRegression"
+    if (providers.gradleProperty("textFixture").isPresent()) {
+        args providers.gradleProperty("textFixture").get()
+    }
+}
+
+tasks.named("check") { dependsOn "textBudgetRegression" }

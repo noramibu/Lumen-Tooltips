@@ -10,7 +10,7 @@
 
 <div align="center">
 
-[![Modrinth Downloads](https://img.shields.io/modrinth/dt/ay9TFvI5?style=for-the-badge&logo=Modrinth&label=Modrinth&color=1bd96a)](https://modrinth.com/project/tooltips)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/ay9TFvI5?style=for-the-badge&logo=Modrinth&label=Modrinth&color=1bd96a)](https://modrinth.com/mod/lumen-tooltips)
 [![GitHub Source](https://img.shields.io/badge/Source-181717?style=for-the-badge&logo=GitHub&label=GitHub)](https://github.com/noramibu/lumen-tooltips)
 [![Discord Join](https://img.shields.io/badge/Join-5865F2?style=for-the-badge&logo=Discord&label=Discord)](https://discord.gg/FaxbR9eEFW)
 
@@ -42,7 +42,7 @@ Lumen Tooltips is a powerful client-side mod that enhances Minecraft's tooltips 
 ### Steps
 1. Install [Fabric Loader](https://fabricmc.net/use/) or [NeoForge](https://neoforged.net/)
 2. Download the following files:
-   - [Lumen Tooltips](https://modrinth.com/project/lumen-tooltips) (this mod)
+   - [Lumen Tooltips](https://modrinth.com/mod/lumen-tooltips) (this mod)
    - [Fabric API](https://modrinth.com/mod/fabric-api) (if using Fabric)
 3. Place all `.jar` files into your `mods` folder
 4. Launch the game
@@ -190,7 +190,7 @@ This project is licensed under the terms of the license specified in the [LICENS
 ---
 
 <p align="center">
- <a href="https://modrinth.com/project/lumen-tooltips">Modrinth</a> •
+ <a href="https://modrinth.com/mod/lumen-tooltips">Modrinth</a> •
  <a href="https://github.com/noramibu/lumen-tooltips">GitHub</a> •
  <a href="https://discord.gg/FaxbR9eEFW">Discord</a>
  </p>
