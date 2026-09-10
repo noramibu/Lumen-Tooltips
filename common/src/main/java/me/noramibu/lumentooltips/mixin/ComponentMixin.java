@@ -13,35 +13,71 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Component.class)
 public interface ComponentMixin {
-  @ModifyVariable(method = "visit(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;", at = @At("HEAD"), argsOnly = true, order = 900)
-  private <T> FormattedText.ContentConsumer<T> lumenTooltips$guardPlainText(
-      FormattedText.ContentConsumer<T> output) {
-    return LumenTextGuard.guardComponent(output);
-  }
-
-  @Inject(method = "visit(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;", at = @At("HEAD"), cancellable = true)
-  private <T> void lumenTooltips$inspectPlainText(
-      FormattedText.ContentConsumer<T> output, CallbackInfoReturnable<Optional<T>> callbackInfo) {
-    Component component = (Component) this;
-    if (LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component)) {
-      callbackInfo.setReturnValue(LumenTextGuard.reject(output));
+    @ModifyVariable(
+            method = "visit(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;",
+            at = @At("HEAD"),
+            argsOnly = true,
+            order = 900)
+    private <T> FormattedText.ContentConsumer<T> lumenTooltips$guardPlainText(FormattedText.ContentConsumer<T> output) {
+        return LumenTextGuard.guardComponent(output);
     }
-  }
 
-  @ModifyVariable(method = "visit(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;", at = @At("HEAD"), argsOnly = true, order = 900)
-  private <T> FormattedText.StyledContentConsumer<T> lumenTooltips$guardStyledText(
-      FormattedText.StyledContentConsumer<T> output) {
-    return LumenTextGuard.guardComponent(output);
-  }
-
-  @Inject(method = "visit(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;", at = @At("HEAD"), cancellable = true)
-  private <T> void lumenTooltips$inspectStyledText(
-      FormattedText.StyledContentConsumer<T> output,
-      Style style,
-      CallbackInfoReturnable<Optional<T>> callbackInfo) {
-    Component component = (Component) this;
-    if (LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component)) {
-      callbackInfo.setReturnValue(LumenTextGuard.reject(output, style));
+    @Inject(
+            method = "visit(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;",
+            at = @At("HEAD"),
+            cancellable = true)
+    private <T> void lumenTooltips$inspectPlainText(
+            FormattedText.ContentConsumer<T> output, CallbackInfoReturnable<Optional<T>> callbackInfo) {
+        Component component = (Component) this;
+        if (!LumenTextGuard.enterComponent(output, component)
+                || LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component, output)) {
+            callbackInfo.setReturnValue(LumenTextGuard.reject(output));
+        }
     }
-  }
+
+    @ModifyVariable(
+            method =
+                    "visit(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;",
+            at = @At("HEAD"),
+            argsOnly = true,
+            order = 900)
+    private <T> FormattedText.StyledContentConsumer<T> lumenTooltips$guardStyledText(
+            FormattedText.StyledContentConsumer<T> output) {
+        return LumenTextGuard.guardComponent(output);
+    }
+
+    @Inject(
+            method =
+                    "visit(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;",
+            at = @At("HEAD"),
+            cancellable = true)
+    private <T> void lumenTooltips$inspectStyledText(
+            FormattedText.StyledContentConsumer<T> output,
+            Style style,
+            CallbackInfoReturnable<Optional<T>> callbackInfo) {
+        Component component = (Component) this;
+        if (!LumenTextGuard.enterComponent(output, component)
+                || LumenTextGuard.shouldInspect(output, component) && !LumenTextGuard.inspect(component, output)) {
+            callbackInfo.setReturnValue(LumenTextGuard.reject(output, style));
+        }
+    }
+
+    @Inject(
+            method = "visit(Lnet/minecraft/network/chat/FormattedText$ContentConsumer;)Ljava/util/Optional;",
+            at = @At("RETURN"))
+    private <T> void lumenTooltips$finishPlainText(
+            FormattedText.ContentConsumer<T> output, CallbackInfoReturnable<Optional<T>> callbackInfo) {
+        LumenTextGuard.exitComponent(output);
+    }
+
+    @Inject(
+            method =
+                    "visit(Lnet/minecraft/network/chat/FormattedText$StyledContentConsumer;Lnet/minecraft/network/chat/Style;)Ljava/util/Optional;",
+            at = @At("RETURN"))
+    private <T> void lumenTooltips$finishStyledText(
+            FormattedText.StyledContentConsumer<T> output,
+            Style style,
+            CallbackInfoReturnable<Optional<T>> callbackInfo) {
+        LumenTextGuard.exitComponent(output);
+    }
 }
