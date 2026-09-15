@@ -3,12 +3,11 @@ package me.noramibu.lumentooltips.config;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLMouse;
 
 public final class LumenInputBinding {
     public static final String UNBOUND = InputConstants.UNKNOWN.getName();
@@ -52,11 +51,10 @@ public final class LumenInputBinding {
         if (key == InputConstants.UNKNOWN) {
             return false;
         }
-        Minecraft minecraft = Minecraft.getInstance();
         if (key.getType() == InputConstants.Type.MOUSE) {
-            return GLFW.glfwGetMouseButton(minecraft.getWindow().handle(), key.getValue()) == InputConstants.PRESS;
+            return (SDLMouse.SDL_GetMouseState(null, null) & (1 << (key.getValue() - 1))) != 0;
         }
-        return InputConstants.isKeyDown(minecraft.getWindow(), key.getValue());
+        return InputConstants.isKeyDown(key.getValue());
     }
 
     public static MutableComponent displayName(String keyName) {
@@ -138,7 +136,7 @@ public final class LumenInputBinding {
             case InputConstants.KEY_LCONTROL, InputConstants.KEY_RCONTROL -> InputConstants.MOD_CONTROL;
             case InputConstants.KEY_LSHIFT, InputConstants.KEY_RSHIFT -> InputConstants.MOD_SHIFT;
             case InputConstants.KEY_LALT, InputConstants.KEY_RALT -> InputConstants.MOD_ALT;
-            case InputConstants.KEY_LSUPER, InputConstants.KEY_RSUPER -> InputConstants.MOD_SUPER;
+            case InputConstants.KEY_LGUI, InputConstants.KEY_RGUI -> InputConstants.MOD_SUPER;
             default -> 0;
         };
     }

@@ -39,7 +39,7 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
     private final float fullness;
 
     public LumenBundleTooltipComponent(BundleContents contents) {
-        this.items = contents.itemCopyStream().toList();
+        this.items = contents.itemCopies().toList();
         this.rows = Math.max(1, (this.items.size() + COLUMNS - 1) / COLUMNS);
         this.selectedIndex = contents.getSelectedItemIndex();
         this.fullness = contents.weight().result().map(Number::floatValue).orElse(0.0F);
@@ -96,7 +96,8 @@ public final class LumenBundleTooltipComponent implements TooltipComponent, Clie
                 x + width / 2 - 12 - nameWidth / 2,
                 y - 37,
                 DefaultTooltipPositioner.INSTANCE,
-                item.get(DataComponents.TOOLTIP_STYLE));
+                item.get(DataComponents.TOOLTIP_STYLE),
+                true);
     }
 
     private void drawProgressBar(Font font, GuiGraphicsExtractor graphics, int x, int y) {

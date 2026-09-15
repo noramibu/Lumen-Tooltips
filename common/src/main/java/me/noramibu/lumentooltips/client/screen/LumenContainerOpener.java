@@ -19,10 +19,9 @@ public final class LumenContainerOpener {
 
     public static boolean tryOpen(ItemStack stack, KeyEvent event) {
         LumenConfig.PreviewConfig previewConfig = LumenConfigManager.current().modules.preview;
-        if (!previewConfig.enabled || !LumenInputBinding.matches(previewConfig.openKey, event)) {
-            return false;
-        }
-        return previewConfig.openContainers && open(stack) || previewConfig.openBooks && openBook(stack);
+        return previewConfig.enabled
+                && LumenInputBinding.matches(previewConfig.openKey, event)
+                && (previewConfig.openContainers && open(stack) || previewConfig.openBooks && openBook(stack));
     }
 
     public static boolean isBook(ItemStack stack) {

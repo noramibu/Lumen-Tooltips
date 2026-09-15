@@ -2,10 +2,9 @@ package me.noramibu.lumentooltips.neoforge;
 
 import me.noramibu.lumentooltips.LumenTooltips;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
-import net.minecraft.client.Minecraft;
+import me.noramibu.lumentooltips.tooltip.LumenItemStatistics;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.ComposterBlock;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -25,11 +24,8 @@ public final class NeoForgeLumenTooltips {
                                 .getModContainerById(namespace)
                                 .map(mod -> mod.getModInfo().getDisplayName())
                                 .orElse(namespace),
-                        stack -> {
-                            var level = Minecraft.getInstance().level;
-                            return level == null ? 0 : stack.getBurnTime(null, level.fuelValues());
-                        },
-                        ComposterBlock::getValue,
+                        LumenItemStatistics::fuelTime,
+                        LumenItemStatistics::compostChance,
                         NeoForgeLumenTooltips::baseBlastResistance,
                         () -> modVersion(LumenTooltips.MOD_ID),
                         () -> modVersion("minecraft")));

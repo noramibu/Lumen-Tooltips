@@ -1,5 +1,6 @@
 package me.noramibu.lumentooltips.client.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import me.noramibu.lumentooltips.client.LumenItemEditor;
 import me.noramibu.lumentooltips.tooltip.preview.LumenContainerContents;
@@ -23,7 +24,6 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 public final class LumenContainerScreen extends ContainerScreen {
     private static final int COLUMNS = 9;
@@ -91,7 +91,7 @@ public final class LumenContainerScreen extends ContainerScreen {
                 return true;
             }
         }
-        if (event.key() == GLFW.GLFW_KEY_ESCAPE || this.minecraft.options.keyInventory.matches(event)) {
+        if (event.key() == InputConstants.KEY_ESCAPE || this.minecraft.options.keyInventory.matches(event)) {
             onClose();
             return true;
         }

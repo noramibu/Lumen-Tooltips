@@ -18,6 +18,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.enchantment.Enchantable;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
 final class LumenExtraStatistics {
     private static final float MAX_REASONABLE_MINING_SPEED = 1_000_000.0F;
@@ -32,9 +33,18 @@ final class LumenExtraStatistics {
         if (config.fuelTime) {
             appendFuelTime(stack, tooltip, config.useSeconds);
         }
-        if (config.compostChance) {
+        var compost = stack.get(DataComponents.COMPOSTABLE);
+        if (config.compostChance && compost != null) {
             float chance = LumenTooltips.compostChance(stack);
-            addPositive(tooltip, "compost_chance", chance * 100.0F, "%");
+            if (chance < 0) {
+                int percent = LumenItemStatistics.vanillaDefault(compost.layers(), "compostable/");
+                add(
+                        tooltip,
+                        "compost_chance",
+                        referenceValue(percent, Component.literal(percent + "%"), "vanilla_compost"));
+            } else {
+                add(tooltip, "compost_chance", format(chance * 100.0F) + "%");
+            }
         }
         if (config.useCooldown) {
             UseCooldown cooldown = stack.get(DataComponents.USE_COOLDOWN);
@@ -64,10 +74,25 @@ final class LumenExtraStatistics {
     }
 
     private static void appendFuelTime(ItemStack stack, List<Component> tooltip, boolean seconds) {
+        var fuel = stack.get(DataComponents.COOKING_FUEL);
+        if (fuel == null) return;
         int ticks = LumenTooltips.fuelTime(stack);
-        if (ticks > 0) {
+        if (fuel.burnTime() instanceof ResolvableInt.Constant) {
             add(tooltip, "fuel_time", duration(ticks, ticks / 20.0F, seconds));
+        } else {
+            int defaultTicks = LumenItemStatistics.vanillaDefault(fuel.burnTime(), "cooking/");
+            add(
+                    tooltip,
+                    "fuel_time",
+                    referenceValue(
+                            defaultTicks, duration(defaultTicks, defaultTicks / 20.0F, seconds), "vanilla_fuel"));
         }
+    }
+
+    private static Component referenceValue(int value, Component formatted, String key) {
+        return value < 0
+                ? Component.translatable("tooltip.lumen_tooltips.extra.unavailable")
+                : Component.translatable("tooltip.lumen_tooltips.extra." + key, formatted);
     }
 
     private static void appendBlockStatistics(

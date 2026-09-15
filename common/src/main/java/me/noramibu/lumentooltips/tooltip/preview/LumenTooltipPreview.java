@@ -283,7 +283,7 @@ public final class LumenTooltipPreview {
     }
 
     private static TooltipComponent configBundleSample() {
-        BundleContents.Mutable contents = new BundleContents.Mutable(BundleContents.EMPTY);
+        BundleContents.Mutable contents = new BundleContents.Mutable();
         contents.tryInsert(new ItemStack(Items.DIAMOND, 8));
         contents.tryInsert(new ItemStack(Items.BREAD, 16));
         contents.tryInsert(new ItemStack(Items.ENDER_PEARL, 4));

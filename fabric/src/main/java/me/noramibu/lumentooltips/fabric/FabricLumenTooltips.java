@@ -2,11 +2,10 @@ package me.noramibu.lumentooltips.fabric;
 
 import me.noramibu.lumentooltips.LumenTooltips;
 import me.noramibu.lumentooltips.client.FabricItemEditorApi;
+import me.noramibu.lumentooltips.tooltip.LumenItemStatistics;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.level.block.ComposterBlock;
 
 public final class FabricLumenTooltips implements ClientModInitializer {
     private static final String ITEM_EDITOR_MOD_ID = "itemeditor";
@@ -21,11 +20,8 @@ public final class FabricLumenTooltips implements ClientModInitializer {
                         namespace -> loader.getModContainer(namespace)
                                 .map(mod -> mod.getMetadata().getName())
                                 .orElse(namespace),
-                        stack -> {
-                            var level = Minecraft.getInstance().level;
-                            return level == null ? 0 : level.fuelValues().burnDuration(stack);
-                        },
-                        stack -> ComposterBlock.COMPOSTABLES.getFloat(stack.getItem()),
+                        LumenItemStatistics::fuelTime,
+                        LumenItemStatistics::compostChance,
                         block -> block.getExplosionResistance(),
                         () -> modVersion(loader, LumenTooltips.MOD_ID),
                         () -> modVersion(loader, "minecraft")));

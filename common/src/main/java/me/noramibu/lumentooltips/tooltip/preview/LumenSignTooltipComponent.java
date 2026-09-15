@@ -1,6 +1,5 @@
 package me.noramibu.lumentooltips.tooltip.preview;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import me.noramibu.lumentooltips.config.LumenConfig;
@@ -25,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
 final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltipComponent {
@@ -46,7 +46,8 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
     private final boolean hanging;
 
     private LumenSignTooltipComponent(SignBlock block, SignText text, LumenConfig.PreviewConfig config) {
-        this.lines = text.getMessages(Minecraft.getInstance().isTextFilteringEnabled());
+        this.lines = text.getMessages(Minecraft.getInstance().isTextFilteringEnabled())
+                .toArray(Component[]::new);
         this.textColor =
                 text.hasGlowingText() ? text.getColor().getTextColor() : AbstractSignRenderer.getDarkColor(text);
         this.config = config;
@@ -75,7 +76,10 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
                 return Optional.empty();
             }
         }
-        SignText text = hasText(sign.getFrontText()) ? sign.getFrontText() : sign.getBackText();
+        sign.applyComponentsFromItemStack(stack);
+        SignText text = hasText(sign.getText(SignTextSlot.FRONT))
+                ? sign.getText(SignTextSlot.FRONT)
+                : sign.getText(SignTextSlot.BACK);
         return Optional.of(new LumenSignTooltipComponent(block, text, config));
     }
 
@@ -172,7 +176,7 @@ final class LumenSignTooltipComponent implements TooltipComponent, ClientTooltip
     }
 
     private static boolean hasText(SignText text) {
-        return Arrays.stream(text.getMessages(false))
+        return text.getMessages(false).stream()
                 .anyMatch(line -> !line.getString().isBlank());
     }
 }

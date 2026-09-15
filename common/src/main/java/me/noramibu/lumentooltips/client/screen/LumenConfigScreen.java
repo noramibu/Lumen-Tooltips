@@ -520,7 +520,8 @@ public final class LumenConfigScreen extends Screen {
                 mouseX,
                 mouseY,
                 (screenWidth, screenHeight, anchorX, anchorY, width, height) -> new Vector2i(x, y),
-                null);
+                null,
+                true);
     }
 
     private List<ClientTooltipComponent> previewLines(

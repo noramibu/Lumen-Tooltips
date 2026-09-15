@@ -21,7 +21,7 @@ public final class LumenContainerContents {
         if (contents.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(contents.itemCopyStream().toList());
+        return Optional.of(contents.itemCopies().toList());
     }
 
     public static boolean isOpenable(ItemStack stack) {
@@ -33,7 +33,7 @@ public final class LumenContainerContents {
         if (!container.nonEmptyItems().iterator().hasNext()) {
             return Optional.empty();
         }
-        return Optional.of(container.allItemsCopyStream().toList());
+        return Optional.of(container.itemCopies().toList());
     }
 
     static boolean hasStoredContainerItems(ItemStack stack) {

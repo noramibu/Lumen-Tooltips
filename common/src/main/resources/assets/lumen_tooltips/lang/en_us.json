@@ -1,4 +1,7 @@
 {
+  "tooltip.lumen_tooltips.extra.unavailable": "Value unavailable client-side",
+  "tooltip.lumen_tooltips.extra.vanilla_fuel": "%s (Vanilla default, furnace)",
+  "tooltip.lumen_tooltips.extra.vanilla_compost": "%s (Vanilla default, non-empty composter)",
   "screen.lumen_tooltips.dialog.columns_limited": "Dialog Crash Prevented",
   "screen.lumen_tooltips.config.title": "Lumen Tooltips",
   "screen.lumen_tooltips.config.open": "Lumen Tooltips",

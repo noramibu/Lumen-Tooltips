@@ -199,7 +199,6 @@ final class LumenEntityPreviewResolver {
     }
 
     private static Entity prepare(Entity entity) {
-        // Detached previews never enter the world's ID assignment path.
         entity.setId(-1);
         entity.snapTo(0.0, 0.0, 0.0, 180.0F, 0.0F);
         entity.setYHeadRot(180.0F);
