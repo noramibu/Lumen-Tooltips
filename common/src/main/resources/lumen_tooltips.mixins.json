@@ -12,6 +12,7 @@
     "CreativeModeInventoryScreenMixin",
     "CreativeSlotWrapperAccessor",
     "DefaultTooltipPositionerMixin",
+    "DialogScreenMixin",
     "EntityAccessor",
     "GuiMixin",
     "GuiGraphicsMixin",

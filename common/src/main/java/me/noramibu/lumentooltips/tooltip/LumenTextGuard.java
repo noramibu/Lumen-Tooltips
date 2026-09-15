@@ -184,7 +184,6 @@ public final class LumenTextGuard {
         private final int maxTranslationVisits;
         private final boolean limitCharacters;
         private int remainingCharacters;
-        // Includes literal arguments inside translations, such as formatted /data output.
         private int remainingLiteralCharacters = 524_288;
         private final IdentityHashMap<Object, Boolean> visitedComponents = new IdentityHashMap<>();
         private final boolean[] repeatedComponents = new boolean[128];
@@ -227,7 +226,6 @@ public final class LumenTextGuard {
         boolean accept(int length) {
             if (this.blocked) return false;
             if (!this.limitCharacters) return true;
-            // Identity distinguishes repeated arguments from separate, equal-colored art cells.
             boolean expanded = this.translationDepth > 0
                     && (this.componentDepth == 0 || this.repeatedComponents[this.componentDepth - 1]);
             if (length > this.remainingLiteralCharacters) {

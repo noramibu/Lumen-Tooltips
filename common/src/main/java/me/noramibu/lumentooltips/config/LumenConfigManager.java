@@ -17,204 +17,176 @@ import me.noramibu.lumentooltips.LumenTooltips;
 import org.slf4j.Logger;
 
 public final class LumenConfigManager {
-  private static final int CURRENT_SCHEMA_VERSION = 1;
-  private static final Gson GSON =
-      new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-  private static final String FILE_NAME = LumenTooltips.MOD_ID + ".json";
-  private static final Logger LOGGER = LogUtils.getLogger();
+    private static final int CURRENT_SCHEMA_VERSION = 1;
+    private static final Gson GSON =
+            new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private static final String FILE_NAME = LumenTooltips.MOD_ID + ".json";
+    private static final Logger LOGGER = LogUtils.getLogger();
 
-  private static Path configPath = Path.of("config", FILE_NAME);
-  private static LumenConfig current = validate(new LumenConfig());
+    private static Path configPath = Path.of("config", FILE_NAME);
+    private static LumenConfig current = validate(new LumenConfig());
 
-  private LumenConfigManager() {}
+    private LumenConfigManager() {}
 
-  public static LumenConfig current() {
-    return current;
-  }
-
-  public static void load(Path configDirectory) {
-    configPath = configDirectory.resolve(FILE_NAME);
-    load();
-  }
-
-  public static void load() {
-    Path path = configPath;
-    if (!Files.exists(path)) {
-      apply(new LumenConfig(), SaveMode.DISK);
-      return;
+    public static LumenConfig current() {
+        return current;
     }
 
-    try (Reader reader = Files.newBufferedReader(path)) {
-      LumenConfig loaded = GSON.fromJson(reader, LumenConfig.class);
-      apply(loaded, SaveMode.MEMORY);
-    } catch (IOException | JsonSyntaxException exception) {
-      LOGGER.warn("Could not load Lumen Tooltips config from {}", path, exception);
-      apply(new LumenConfig(), SaveMode.MEMORY);
+    public static void load(Path configDirectory) {
+        configPath = configDirectory.resolve(FILE_NAME);
+        load();
     }
-  }
 
-  public static void save() {
-    save(current);
-  }
+    public static void load() {
+        Path path = configPath;
+        if (!Files.exists(path)) {
+            apply(new LumenConfig(), SaveMode.DISK);
+            return;
+        }
 
-  private static void save(LumenConfig config) {
-    Path path = configPath;
-    Path tempPath = path.resolveSibling(FILE_NAME + ".tmp");
-    try {
-      Files.createDirectories(path.getParent());
-      try (Writer writer = Files.newBufferedWriter(tempPath)) {
-        GSON.toJson(config, writer);
-      }
-      try {
-        Files.move(
-            tempPath, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-      } catch (AtomicMoveNotSupportedException exception) {
-        Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
-      }
-    } catch (IOException exception) {
-      LOGGER.error("Could not save Lumen Tooltips config to {}", path, exception);
+        try (Reader reader = Files.newBufferedReader(path)) {
+            apply(GSON.fromJson(reader, LumenConfig.class), SaveMode.MEMORY);
+        } catch (IOException | JsonSyntaxException exception) {
+            LOGGER.warn("Could not load Lumen Tooltips config from {}", path, exception);
+            apply(new LumenConfig(), SaveMode.MEMORY);
+        }
     }
-  }
 
-  public static void apply(LumenConfig config, SaveMode saveMode) {
-    current = validate(config);
-    if (saveMode == SaveMode.DISK) {
-      save(current);
+    public static void save() {
+        save(current);
     }
-  }
 
-  public static LumenConfig editingCopy() {
-    return GSON.fromJson(GSON.toJson(current), LumenConfig.class);
-  }
+    private static void save(LumenConfig config) {
+        Path path = configPath;
+        Path tempPath = path.resolveSibling(FILE_NAME + ".tmp");
+        try {
+            Files.createDirectories(path.getParent());
+            try (Writer writer = Files.newBufferedWriter(tempPath)) {
+                GSON.toJson(config, writer);
+            }
+            try {
+                Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException exception) {
+                Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException exception) {
+            LOGGER.error("Could not save Lumen Tooltips config to {}", path, exception);
+        }
+    }
 
-  private static LumenConfig validate(LumenConfig config) {
-    LumenConfig safe = Objects.requireNonNullElseGet(config, LumenConfig::new);
-    safe.schemaVersion = CURRENT_SCHEMA_VERSION;
-    safe.controls =
-        Objects.requireNonNullElseGet(safe.controls, LumenConfig.ControlConfig::new);
-    if (safe.controls.detailsMode == null) {
-      safe.controls.detailsMode = HoldMode.KEY;
+    public static void apply(LumenConfig config, SaveMode saveMode) {
+        current = validate(config);
+        if (saveMode == SaveMode.DISK) {
+            save(current);
+        }
     }
-    if (safe.controls.detailsMode == HoldMode.SHIFT) {
-      safe.controls.detailsMode = HoldMode.KEY;
-      safe.controls.detailsKey = LumenInputBinding.LEFT_SHIFT;
-    } else if (safe.controls.detailsMode == HoldMode.ALT) {
-      safe.controls.detailsMode = HoldMode.KEY;
-      safe.controls.detailsKey = LumenInputBinding.LEFT_ALT;
+
+    public static LumenConfig editingCopy() {
+        return GSON.fromJson(GSON.toJson(current), LumenConfig.class);
     }
-    safe.controls.detailsKey =
-        LumenInputBinding.normalize(safe.controls.detailsKey, LumenInputBinding.LEFT_SHIFT);
-    safe.controls.itemEditorKey =
-        LumenInputBinding.normalize(
-            safe.controls.itemEditorKey, LumenInputBinding.CONTROL_SPACE);
-    safe.modules =
-        Objects.requireNonNullElseGet(safe.modules, LumenConfig.ModuleConfig::new);
-    safe.modules.durability =
-        Objects.requireNonNullElseGet(
-            safe.modules.durability, LumenConfig.DurabilityConfig::new);
-    safe.modules.food =
-        Objects.requireNonNullElseGet(safe.modules.food, LumenConfig.FoodConfig::new);
-    safe.modules.enchantments =
-        Objects.requireNonNullElseGet(
-            safe.modules.enchantments, LumenConfig.EnchantmentConfig::new);
-    safe.modules.comparison =
-        Objects.requireNonNullElseGet(
-            safe.modules.comparison, LumenConfig.ComparisonConfig::new);
-    safe.modules.navigation =
-        Objects.requireNonNullElseGet(
-            safe.modules.navigation, LumenConfig.NavigationConfig::new);
-    safe.modules.extraStatistics =
-        Objects.requireNonNullElseGet(
-            safe.modules.extraStatistics, LumenConfig.ExtraStatisticsConfig::new);
-    safe.modules.itemEditor =
-        Objects.requireNonNullElseGet(
-            safe.modules.itemEditor, LumenConfig.ItemEditorConfig::new);
-    safe.modules.safety =
-        Objects.requireNonNullElseGet(safe.modules.safety, LumenConfig.SafetyConfig::new);
-    safe.modules.tooltip =
-        Objects.requireNonNullElseGet(
-            safe.modules.tooltip, LumenConfig.TooltipConfig::new);
-    safe.modules.tooltip.ignoredHiddenComponents =
-        Objects.requireNonNullElseGet(
-            safe.modules.tooltip.ignoredHiddenComponents, LinkedHashSet::new);
-    safe.modules.tooltip.ignoredHiddenComponents.removeIf(Objects::isNull);
-    safe.modules.preview =
-        Objects.requireNonNullElseGet(
-            safe.modules.preview, LumenConfig.PreviewConfig::new);
-    safe.modules.statistics =
-        Objects.requireNonNullElseGet(
-            safe.modules.statistics, LumenConfig.StatisticsConfig::new);
-    if (safe.modules.durability.palette == null) {
-      safe.modules.durability.palette = DurabilityPalette.DEFAULT;
+
+    private static LumenConfig validate(LumenConfig config) {
+        LumenConfig safe = Objects.requireNonNullElseGet(config, LumenConfig::new);
+        safe.schemaVersion = CURRENT_SCHEMA_VERSION;
+        safe.controls = Objects.requireNonNullElseGet(safe.controls, LumenConfig.ControlConfig::new);
+        safe.modules = Objects.requireNonNullElseGet(safe.modules, LumenConfig.ModuleConfig::new);
+        validateControls(safe.controls);
+        validateModules(safe.modules);
+        return safe;
     }
-    if (safe.modules.preview.density == null) {
-      safe.modules.preview.density = PreviewDensity.VANILLA;
+
+    private static void validateModules(LumenConfig.ModuleConfig modules) {
+        modules.durability = Objects.requireNonNullElseGet(modules.durability, LumenConfig.DurabilityConfig::new);
+        modules.food = Objects.requireNonNullElseGet(modules.food, LumenConfig.FoodConfig::new);
+        modules.enchantments = Objects.requireNonNullElseGet(modules.enchantments, LumenConfig.EnchantmentConfig::new);
+        modules.comparison = Objects.requireNonNullElseGet(modules.comparison, LumenConfig.ComparisonConfig::new);
+        modules.navigation = Objects.requireNonNullElseGet(modules.navigation, LumenConfig.NavigationConfig::new);
+        modules.extraStatistics =
+                Objects.requireNonNullElseGet(modules.extraStatistics, LumenConfig.ExtraStatisticsConfig::new);
+        modules.itemEditor = Objects.requireNonNullElseGet(modules.itemEditor, LumenConfig.ItemEditorConfig::new);
+        modules.safety = Objects.requireNonNullElseGet(modules.safety, LumenConfig.SafetyConfig::new);
+        modules.tooltip = Objects.requireNonNullElseGet(modules.tooltip, LumenConfig.TooltipConfig::new);
+        modules.preview = Objects.requireNonNullElseGet(modules.preview, LumenConfig.PreviewConfig::new);
+        modules.statistics = Objects.requireNonNullElseGet(modules.statistics, LumenConfig.StatisticsConfig::new);
+
+        validateTooltip(modules.tooltip);
+        validateDurability(modules.durability);
+        validatePreview(modules.preview);
+        validateExtraStatistics(modules.extraStatistics);
+        validateItemEditor(modules.itemEditor);
+        validateSafety(modules.safety);
     }
-    if (safe.modules.preview.containerMode == null) {
-      safe.modules.preview.containerMode = ContainerPreviewMode.FULL;
+
+    private static void validateControls(LumenConfig.ControlConfig controls) {
+        controls.detailsMode = Objects.requireNonNullElse(controls.detailsMode, HoldMode.KEY);
+        if (controls.detailsMode == HoldMode.SHIFT) {
+            controls.detailsMode = HoldMode.KEY;
+            controls.detailsKey = LumenInputBinding.LEFT_SHIFT;
+        } else if (controls.detailsMode == HoldMode.ALT) {
+            controls.detailsMode = HoldMode.KEY;
+            controls.detailsKey = LumenInputBinding.LEFT_ALT;
+        }
+        controls.detailsKey = LumenInputBinding.normalize(controls.detailsKey, LumenInputBinding.LEFT_SHIFT);
+        controls.itemEditorKey = LumenInputBinding.normalize(controls.itemEditorKey, LumenInputBinding.CONTROL_SPACE);
     }
-    if (safe.modules.extraStatistics.activation == null) {
-      safe.modules.extraStatistics.activation = HoldMode.ALWAYS;
+
+    private static void validateTooltip(LumenConfig.TooltipConfig tooltip) {
+        tooltip.ignoredHiddenComponents =
+                Objects.requireNonNullElseGet(tooltip.ignoredHiddenComponents, LinkedHashSet::new);
+        tooltip.ignoredHiddenComponents.removeIf(Objects::isNull);
+        tooltip.maxWidth = Math.clamp(tooltip.maxWidth, 0, 16_384);
+        tooltip.scrollStep = Math.clamp(tooltip.scrollStep, 4, 64);
     }
-    safe.modules.extraStatistics.key =
-        LumenInputBinding.normalize(
-            safe.modules.extraStatistics.key, LumenInputBinding.LEFT_SHIFT);
-    if (safe.modules.itemEditor.target == null) {
-      safe.modules.itemEditor.target = ItemEditorStorageTarget.FIRST_AVAILABLE;
+
+    private static void validateDurability(LumenConfig.DurabilityConfig durability) {
+        durability.palette = Objects.requireNonNullElse(durability.palette, DurabilityPalette.DEFAULT);
+        durability.warningPercent = Math.clamp(durability.warningPercent, 1, 99);
+        durability.dangerPercent = Math.clamp(durability.dangerPercent, 1, 99);
+        if (durability.dangerPercent > durability.warningPercent) {
+            durability.dangerPercent = durability.warningPercent;
+        }
     }
-    safe.modules.itemEditor.saveKey =
-        LumenInputBinding.normalize(
-            safe.modules.itemEditor.saveKey, LumenInputBinding.CONTROL_S);
-    safe.modules.itemEditor.pageNumber =
-        Math.clamp(
-            safe.modules.itemEditor.pageNumber,
-            1,
-            LumenConfig.ItemEditorConfig.MAX_PAGE_NUMBER);
-    safe.modules.itemEditor.pageName =
-        Objects.requireNonNullElse(
-            safe.modules.itemEditor.pageName, LumenConfig.ItemEditorConfig.DEFAULT_PAGE_NAME);
-    if (safe.modules.itemEditor.pageName.length()
-        > LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH) {
-      safe.modules.itemEditor.pageName =
-          safe.modules.itemEditor.pageName.substring(
-              0, LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH);
+
+    private static void validatePreview(LumenConfig.PreviewConfig preview) {
+        preview.density = Objects.requireNonNullElse(preview.density, PreviewDensity.VANILLA);
+        preview.containerMode = Objects.requireNonNullElse(preview.containerMode, ContainerPreviewMode.FULL);
+        preview.activation = Objects.requireNonNullElse(preview.activation, HoldMode.KEY);
+        if (preview.activation == HoldMode.SHIFT) {
+            preview.activation = HoldMode.KEY;
+            preview.key = LumenInputBinding.LEFT_SHIFT;
+        } else if (preview.activation == HoldMode.ALT) {
+            preview.activation = HoldMode.KEY;
+            preview.key = LumenInputBinding.LEFT_ALT;
+        }
+        if (preview.activation == HoldMode.ADVANCED) {
+            preview.activation = HoldMode.KEY;
+        }
+        preview.key = LumenInputBinding.normalize(preview.key, LumenInputBinding.LEFT_SHIFT);
+        preview.openKey = LumenInputBinding.normalize(preview.openKey, LumenInputBinding.LEFT_ALT);
+        preview.displayYaw = Math.clamp(preview.displayYaw, -180, 180);
+        preview.displayPitch = Math.clamp(preview.displayPitch, -90, 90);
+        preview.containerTintPercent = Math.clamp(preview.containerTintPercent, 0, 100);
     }
-    if (safe.modules.preview.activation == null) {
-      safe.modules.preview.activation = HoldMode.KEY;
+
+    private static void validateExtraStatistics(LumenConfig.ExtraStatisticsConfig extraStatistics) {
+        extraStatistics.activation = Objects.requireNonNullElse(extraStatistics.activation, HoldMode.ALWAYS);
+        extraStatistics.key = LumenInputBinding.normalize(extraStatistics.key, LumenInputBinding.LEFT_SHIFT);
     }
-    if (safe.modules.preview.activation == HoldMode.SHIFT) {
-      safe.modules.preview.activation = HoldMode.KEY;
-      safe.modules.preview.key = LumenInputBinding.LEFT_SHIFT;
-    } else if (safe.modules.preview.activation == HoldMode.ALT) {
-      safe.modules.preview.activation = HoldMode.KEY;
-      safe.modules.preview.key = LumenInputBinding.LEFT_ALT;
+
+    private static void validateItemEditor(LumenConfig.ItemEditorConfig itemEditor) {
+        itemEditor.target = Objects.requireNonNullElse(itemEditor.target, ItemEditorStorageTarget.FIRST_AVAILABLE);
+        itemEditor.saveKey = LumenInputBinding.normalize(itemEditor.saveKey, LumenInputBinding.CONTROL_S);
+        itemEditor.pageNumber = Math.clamp(itemEditor.pageNumber, 1, LumenConfig.ItemEditorConfig.MAX_PAGE_NUMBER);
+        itemEditor.pageName =
+                Objects.requireNonNullElse(itemEditor.pageName, LumenConfig.ItemEditorConfig.DEFAULT_PAGE_NAME);
+        if (itemEditor.pageName.length() > LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH) {
+            itemEditor.pageName = itemEditor.pageName.substring(0, LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH);
+        }
     }
-    if (safe.modules.preview.activation == HoldMode.ADVANCED) {
-      safe.modules.preview.activation = HoldMode.KEY;
+
+    private static void validateSafety(LumenConfig.SafetyConfig safety) {
+        safety.maxCharacters = Math.clamp(safety.maxCharacters, 256, 65_536);
+        safety.maxTranslationDepth = Math.clamp(safety.maxTranslationDepth, 8, 256);
+        safety.maxTranslationVisits = Math.clamp(safety.maxTranslationVisits, 64, 8192);
     }
-    safe.modules.preview.key =
-        LumenInputBinding.normalize(safe.modules.preview.key, LumenInputBinding.LEFT_SHIFT);
-    safe.modules.preview.openKey =
-        LumenInputBinding.normalize(safe.modules.preview.openKey, LumenInputBinding.LEFT_ALT);
-    safe.modules.durability.warningPercent =
-        Math.clamp(safe.modules.durability.warningPercent, 1, 99);
-    safe.modules.durability.dangerPercent =
-        Math.clamp(safe.modules.durability.dangerPercent, 1, 99);
-    if (safe.modules.durability.dangerPercent > safe.modules.durability.warningPercent) {
-      safe.modules.durability.dangerPercent = safe.modules.durability.warningPercent;
-    }
-    safe.modules.tooltip.maxWidth = Math.clamp(safe.modules.tooltip.maxWidth, 0, 16_384);
-    safe.modules.tooltip.scrollStep = Math.clamp(safe.modules.tooltip.scrollStep, 4, 64);
-    safe.modules.safety.maxCharacters =
-        Math.clamp(safe.modules.safety.maxCharacters, 256, 65_536);
-    safe.modules.safety.maxTranslationDepth =
-        Math.clamp(safe.modules.safety.maxTranslationDepth, 8, 256);
-    safe.modules.safety.maxTranslationVisits =
-        Math.clamp(safe.modules.safety.maxTranslationVisits, 64, 8192);
-    safe.modules.preview.displayYaw = Math.clamp(safe.modules.preview.displayYaw, -180, 180);
-    safe.modules.preview.displayPitch = Math.clamp(safe.modules.preview.displayPitch, -90, 90);
-    safe.modules.preview.containerTintPercent =
-        Math.clamp(safe.modules.preview.containerTintPercent, 0, 100);
-    return safe;
-  }
 }
