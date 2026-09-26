@@ -6,7 +6,10 @@
   "client": [
     "AbstractContainerScreenMixin",
     "ChatScreenMixin",
+    "StorageLinkMixin",
     "ClientPacketListenerMixin",
+    "ParticleSafetyMixin",
+    "ParticleEngineMixin",
     "ClientTooltipComponentMixin",
     "ComponentMixin",
     "CreativeModeInventoryScreenMixin",

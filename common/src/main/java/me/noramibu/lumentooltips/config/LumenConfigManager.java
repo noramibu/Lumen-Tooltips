@@ -105,6 +105,8 @@ public final class LumenConfigManager {
                 Objects.requireNonNullElseGet(modules.extraStatistics, LumenConfig.ExtraStatisticsConfig::new);
         modules.itemEditor = Objects.requireNonNullElseGet(modules.itemEditor, LumenConfig.ItemEditorConfig::new);
         modules.safety = Objects.requireNonNullElseGet(modules.safety, LumenConfig.SafetyConfig::new);
+        modules.particleSafety =
+                Objects.requireNonNullElseGet(modules.particleSafety, LumenConfig.ParticleSafetyConfig::new);
         modules.tooltip = Objects.requireNonNullElseGet(modules.tooltip, LumenConfig.TooltipConfig::new);
         modules.preview = Objects.requireNonNullElseGet(modules.preview, LumenConfig.PreviewConfig::new);
         modules.statistics = Objects.requireNonNullElseGet(modules.statistics, LumenConfig.StatisticsConfig::new);
@@ -115,6 +117,7 @@ public final class LumenConfigManager {
         validateExtraStatistics(modules.extraStatistics);
         validateItemEditor(modules.itemEditor);
         validateSafety(modules.safety);
+        validateParticleSafety(modules.particleSafety);
     }
 
     private static void validateControls(LumenConfig.ControlConfig controls) {
@@ -184,8 +187,20 @@ public final class LumenConfigManager {
         }
     }
 
+    private static void validateParticleSafety(LumenConfig.ParticleSafetyConfig particles) {
+        particles.maxElderGuardians = Math.clamp(particles.maxElderGuardians, 1, 256);
+        particles.maxExplosionEmitters = Math.clamp(particles.maxExplosionEmitters, 1, 256);
+        particles.maxGustEmitters = Math.clamp(particles.maxGustEmitters, 1, 256);
+        particles.maxPerPacket = Math.clamp(particles.maxPerPacket, 1, 65536);
+        particles.maxPerWindow = Math.clamp(particles.maxPerWindow, 1, 1048576);
+        particles.windowMillis = Math.clamp(particles.windowMillis, 100, 10000);
+        particles.warningCooldownSeconds = Math.clamp(particles.warningCooldownSeconds, 1, 300);
+    }
+
     private static void validateSafety(LumenConfig.SafetyConfig safety) {
-        safety.maxCharacters = Math.clamp(safety.maxCharacters, 256, 65_536);
+        safety.maxCharacters = Math.clamp(safety.maxCharacters, 256, 262_144);
+        safety.maxLiteralCharacters = Math.clamp(safety.maxLiteralCharacters, 256, 2_097_152);
+        safety.obfuscatedCharacterWeight = Math.clamp(safety.obfuscatedCharacterWeight, 1, 1000);
         safety.maxTranslationDepth = Math.clamp(safety.maxTranslationDepth, 8, 256);
         safety.maxTranslationVisits = Math.clamp(safety.maxTranslationVisits, 64, 8192);
     }
