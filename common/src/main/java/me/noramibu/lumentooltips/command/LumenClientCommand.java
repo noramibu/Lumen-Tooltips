@@ -2,14 +2,15 @@ package me.noramibu.lumentooltips.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import me.noramibu.lumentooltips.client.LumenChat;
 import me.noramibu.lumentooltips.client.screen.LumenScreenOpener;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
 import me.noramibu.lumentooltips.config.SaveMode;
 import me.noramibu.lumentooltips.service.LumenUsageReporter;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
-import net.minecraft.network.chat.Component;
 
 public final class LumenClientCommand {
     private static final String USAGE_KEY = "command.lumen_tooltips.error.usage";
@@ -63,6 +64,11 @@ public final class LumenClientCommand {
     }
 
     private static void feedback(String key) {
-        Minecraft.getInstance().gui.hud.getChat().addClientSystemMessage(Component.translatable(key));
+        Minecraft.getInstance()
+                .gui
+                .hud
+                .getChat()
+                .addClientSystemMessage(LumenChat.message(key)
+                        .withStyle(USAGE_KEY.equals(key) ? ChatFormatting.RED : ChatFormatting.GREEN));
     }
 }

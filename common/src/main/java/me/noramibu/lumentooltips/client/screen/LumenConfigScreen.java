@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import me.noramibu.lumentooltips.config.ConfigOption;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
@@ -49,6 +50,8 @@ public final class LumenConfigScreen extends Screen {
     private static final int PREVIEW_GAP = 8;
     private static final int PREVIEW_MARGIN = 6;
     private static final int RESET_WIDTH = 20;
+    private static final String PARTICLE_PREFIX = "modules.particleSafety.";
+    private static final String PREVIEW_PREFIX = "modules.preview.";
     private static final List<Category> CATEGORIES = List.of(
             new Category("keybinds", "screen.lumen_tooltips.config.controls", Items.TRIPWIRE_HOOK),
             category("modules.itemEditor.", "item_editor", Items.WRITABLE_BOOK),
@@ -60,9 +63,41 @@ public final class LumenConfigScreen extends Screen {
             category("modules.navigation.", "navigation", Items.FILLED_MAP),
             category("modules.extraStatistics.", "extra_statistics", Items.COMPARATOR),
             category("modules.safety.", "safety", Items.SHIELD),
+            category(PARTICLE_PREFIX, "particle_safety", Items.BLAZE_POWDER),
             category("modules.statistics.", "statistics", Items.PAPER),
             new Category("modules.tooltipFlags.", "screen.lumen_tooltips.config.tooltip_flags", Items.REDSTONE_TORCH),
-            category("modules.preview.", "previews", Items.SPYGLASS));
+            category(PREVIEW_PREFIX, "previews", Items.SPYGLASS));
+    private static final List<Category> PARTICLE_CATEGORIES = List.of(
+            subCategory(
+                    "particle",
+                    "general",
+                    Items.BLAZE_POWDER,
+                    "enabled limitPerPacket limitRate dropOversized maxPerPacket maxPerWindow windowMillis"),
+            subCategory(
+                    "particle", "guardians", Items.ELDER_GUARDIAN_SPAWN_EGG, "limitElderGuardians maxElderGuardians"),
+            subCategory("particle", "explosions", Items.TNT, "limitExplosionEmitters maxExplosionEmitters"),
+            subCategory("particle", "gusts", Items.WIND_CHARGE, "limitGustEmitters maxGustEmitters"),
+            subCategory("particle", "notifications", Items.PAPER, "showWarnings warningCooldownSeconds"));
+    private static final List<Category> PREVIEW_CATEGORIES = List.of(
+            subCategory("preview", "general", Items.SPYGLASS, "enabled density accents reducedMotion"),
+            subCategory(
+                    "preview",
+                    "containers",
+                    Items.SHULKER_BOX,
+                    "openContainers nestedNavigation shulkers containers containerMode showContainerTitle "
+                            + "showContainerCounts containerTintPercent bundles enderChest"),
+            subCategory("preview", "books", Items.WRITTEN_BOOK, "openBooks books maps"),
+            subCategory(
+                    "preview",
+                    "items",
+                    Items.DECORATED_POT,
+                    "banners decoratedPots potions paintings playerHeads signs itemDetails fireworks"),
+            subCategory(
+                    "preview",
+                    "entities",
+                    Items.CREEPER_SPAWN_EGG,
+                    "entities areaEffectClouds displayEntities itemFrames displayYaw displayPitch spawnEggs "
+                            + "mobBuckets spawners"));
 
     private final Screen parent;
     private final List<AbstractWidget> pageWidgets = new ArrayList<>();
@@ -157,7 +192,7 @@ public final class LumenConfigScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float tickDelta) {
         super.extractRenderState(graphics, mouseX, mouseY, tickDelta);
-        Component sectionTitle = this.showingCategories
+        Component sectionTitle = this.selectedCategory == null && !this.searching
                 ? Component.translatable("screen.lumen_tooltips.config.categories")
                 : this.searching
                         ? Component.translatable("screen.lumen_tooltips.config.search")
@@ -197,7 +232,7 @@ public final class LumenConfigScreen extends Screen {
             return;
         }
         if (this.selectedCategory != null) {
-            this.selectedCategory = null;
+            this.selectedCategory = this.selectedCategory.parent();
             this.page = 0;
             rebuildPage();
             return;
@@ -219,7 +254,9 @@ public final class LumenConfigScreen extends Screen {
 
         String query = this.searchText.toLowerCase(Locale.ROOT).trim();
         this.searching = !query.isEmpty();
-        this.showingCategories = !this.searching && this.selectedCategory == null;
+        this.showingCategories = !this.searching
+                && (this.selectedCategory == null
+                        || !this.selectedCategory.children().isEmpty());
         int gridY = this.searchBox.getY() + ROW_PITCH;
 
         if (this.showingCategories) {
@@ -303,7 +340,7 @@ public final class LumenConfigScreen extends Screen {
         addPageWidget(reset);
         x += actionWidth + FOOTER_GAP;
 
-        addPageWidget(Button.builder(CommonComponents.GUI_DONE, button -> closeToParent())
+        addPageWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
                 .bounds(x, y, actionWidth, BUTTON_HEIGHT)
                 .build());
         x += actionWidth + FOOTER_GAP;
@@ -331,7 +368,7 @@ public final class LumenConfigScreen extends Screen {
             return;
         }
         if (!this.searching && this.selectedCategory != null) {
-            this.selectedCategory = null;
+            this.selectedCategory = this.selectedCategory.parent();
             rebuildPage();
         }
     }
@@ -368,11 +405,12 @@ public final class LumenConfigScreen extends Screen {
                 .toList();
     }
 
-    private static List<Category> visibleCategories() {
-        return CATEGORIES.stream()
-                .filter(category ->
-                        LumenOptionRegistry.options().stream().anyMatch(option -> category.contains(option.path())))
-                .toList();
+    private List<Category> visibleCategories() {
+        return (this.selectedCategory == null ? CATEGORIES : this.selectedCategory.children())
+                .stream()
+                        .filter(category -> LumenOptionRegistry.options().stream()
+                                .anyMatch(option -> category.contains(option.path())))
+                        .toList();
     }
 
     private void addAdvancedToggle() {
@@ -804,8 +842,33 @@ public final class LumenConfigScreen extends Screen {
                 : option.maxValue();
     }
 
-    private record Category(String prefix, String titleKey, Item item) {
+    private record Category(
+            String prefix, String titleKey, Item item, @Nullable String parentPrefix, Set<String> options) {
+        Category(String prefix, String titleKey, Item item) {
+            this(prefix, titleKey, item, null, Set.of());
+        }
+
+        List<Category> children() {
+            return switch (this.prefix) {
+                case PARTICLE_PREFIX -> PARTICLE_CATEGORIES;
+                case PREVIEW_PREFIX -> PREVIEW_CATEGORIES;
+                default -> List.of();
+            };
+        }
+
+        Category parent() {
+            if (this.parentPrefix == null) return null;
+            return CATEGORIES.stream()
+                    .filter(category -> category.prefix.equals(this.parentPrefix))
+                    .findFirst()
+                    .orElse(null);
+        }
+
         boolean contains(String path) {
+            if (this.parentPrefix != null) {
+                return path.startsWith(this.parentPrefix)
+                        && this.options.contains(path.substring(this.parentPrefix.length()));
+            }
             return isKeybindCenter() ? isCentralControl(path) : !isCentralControl(path) && path.startsWith(this.prefix);
         }
 
@@ -824,6 +887,16 @@ public final class LumenConfigScreen extends Screen {
 
     private static Category category(String prefix, String title, Item item) {
         return new Category(prefix, "screen.lumen_tooltips.config." + title, item);
+    }
+
+    private static Category subCategory(String group, String name, Item item, String options) {
+        String parentPrefix = "particle".equals(group) ? PARTICLE_PREFIX : PREVIEW_PREFIX;
+        return new Category(
+                group + ":" + name,
+                "screen.lumen_tooltips.config." + group + "_" + name,
+                item,
+                parentPrefix,
+                Set.of(options.split(" ")));
     }
 
     private static boolean isHoldBinding(ConfigOption option) {

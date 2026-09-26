@@ -31,7 +31,8 @@ public final class FabricLumenTooltips implements ClientModInitializer {
                         () -> modVersion(loader, "minecraft")));
         loader.getModContainer(ITEM_EDITOR_MOD_ID)
                 .filter(mod -> supportsItemEditorApi(mod.getMetadata().getVersion()))
-                .ifPresent(mod -> FabricItemEditorApi.install());
+                .ifPresent(mod -> FabricItemEditorApi.install(
+                        LumenTooltips.buildNumber(mod.getMetadata().getVersion().getFriendlyString()) >= 24));
     }
 
     private static String modVersion(FabricLoader loader, String modId) {

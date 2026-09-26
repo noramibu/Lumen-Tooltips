@@ -8,4 +8,5 @@ neoForge {
 
 dependencies {
     compileOnly "org.spongepowered:mixin:${mixin_version}"
+    compileOnly "io.github.llamalad7:mixinextras-common:0.5.3"
 }
