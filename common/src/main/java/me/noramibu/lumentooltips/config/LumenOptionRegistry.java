@@ -9,6 +9,87 @@ public final class LumenOptionRegistry {
     private static final String ITEM_EDITOR_KEY_PATH = "controls.itemEditorKey";
     private static final String ITEM_EDITOR_STORAGE_PREFIX = "modules.itemEditor.";
     private static final List<ConfigOption> OPTIONS = List.of(
+            ConfigOption.toggle(
+                    "modules.particleSafety.limitElderGuardians",
+                    config -> config.modules.particleSafety.limitElderGuardians,
+                    (config, value) -> config.modules.particleSafety.limitElderGuardians = value),
+            ConfigOption.integer(
+                    "modules.particleSafety.maxElderGuardians",
+                    1,
+                    256,
+                    1,
+                    config -> config.modules.particleSafety.maxElderGuardians,
+                    (config, value) -> config.modules.particleSafety.maxElderGuardians = value),
+            ConfigOption.toggle(
+                    "modules.particleSafety.limitExplosionEmitters",
+                    config -> config.modules.particleSafety.limitExplosionEmitters,
+                    (config, value) -> config.modules.particleSafety.limitExplosionEmitters = value),
+            ConfigOption.integer(
+                    "modules.particleSafety.maxExplosionEmitters",
+                    1,
+                    256,
+                    1,
+                    config -> config.modules.particleSafety.maxExplosionEmitters,
+                    (config, value) -> config.modules.particleSafety.maxExplosionEmitters = value),
+            ConfigOption.toggle(
+                    "modules.particleSafety.limitGustEmitters",
+                    config -> config.modules.particleSafety.limitGustEmitters,
+                    (config, value) -> config.modules.particleSafety.limitGustEmitters = value),
+            ConfigOption.integer(
+                    "modules.particleSafety.maxGustEmitters",
+                    1,
+                    256,
+                    1,
+                    config -> config.modules.particleSafety.maxGustEmitters,
+                    (config, value) -> config.modules.particleSafety.maxGustEmitters = value),
+            ConfigOption.toggle(
+                    "modules.particleSafety.enabled",
+                    config -> config.modules.particleSafety.enabled,
+                    (config, value) -> config.modules.particleSafety.enabled = value),
+            ConfigOption.toggle(
+                    "modules.particleSafety.limitPerPacket",
+                    config -> config.modules.particleSafety.limitPerPacket,
+                    (config, value) -> config.modules.particleSafety.limitPerPacket = value),
+            ConfigOption.toggle(
+                    "modules.particleSafety.limitRate",
+                    config -> config.modules.particleSafety.limitRate,
+                    (config, value) -> config.modules.particleSafety.limitRate = value),
+            ConfigOption.toggle(
+                    "modules.particleSafety.dropOversized",
+                    config -> config.modules.particleSafety.dropOversized,
+                    (config, value) -> config.modules.particleSafety.dropOversized = value),
+            ConfigOption.toggle(
+                    "modules.particleSafety.showWarnings",
+                    config -> config.modules.particleSafety.showWarnings,
+                    (config, value) -> config.modules.particleSafety.showWarnings = value),
+            ConfigOption.integer(
+                    "modules.particleSafety.maxPerPacket",
+                    1,
+                    65536,
+                    256,
+                    config -> config.modules.particleSafety.maxPerPacket,
+                    (config, value) -> config.modules.particleSafety.maxPerPacket = value),
+            ConfigOption.integer(
+                    "modules.particleSafety.maxPerWindow",
+                    1,
+                    1048576,
+                    256,
+                    config -> config.modules.particleSafety.maxPerWindow,
+                    (config, value) -> config.modules.particleSafety.maxPerWindow = value),
+            ConfigOption.integer(
+                    "modules.particleSafety.windowMillis",
+                    100,
+                    10000,
+                    100,
+                    config -> config.modules.particleSafety.windowMillis,
+                    (config, value) -> config.modules.particleSafety.windowMillis = value),
+            ConfigOption.integer(
+                    "modules.particleSafety.warningCooldownSeconds",
+                    1,
+                    300,
+                    1,
+                    config -> config.modules.particleSafety.warningCooldownSeconds,
+                    (config, value) -> config.modules.particleSafety.warningCooldownSeconds = value),
             ConfigOption.holdMode(
                     "controls.detailsMode",
                     config -> config.controls.detailsMode,
@@ -63,10 +144,24 @@ public final class LumenOptionRegistry {
             ConfigOption.integer(
                     "modules.safety.maxCharacters",
                     256,
-                    65_536,
+                    262_144,
                     256,
                     config -> config.modules.safety.maxCharacters,
                     (config, value) -> config.modules.safety.maxCharacters = value),
+            ConfigOption.integer(
+                    "modules.safety.maxLiteralCharacters",
+                    256,
+                    2_097_152,
+                    256,
+                    config -> config.modules.safety.maxLiteralCharacters,
+                    (config, value) -> config.modules.safety.maxLiteralCharacters = value),
+            ConfigOption.integer(
+                    "modules.safety.obfuscatedCharacterWeight",
+                    1,
+                    1000,
+                    1,
+                    config -> config.modules.safety.obfuscatedCharacterWeight,
+                    (config, value) -> config.modules.safety.obfuscatedCharacterWeight = value),
             ConfigOption.integer(
                     "modules.safety.maxTranslationDepth",
                     8,
@@ -448,6 +543,21 @@ public final class LumenOptionRegistry {
     }
 
     public static boolean isVisible(ConfigOption option, LumenConfig config) {
+        if (option.path().startsWith("modules.particleSafety.")
+                && !option.path().equals("modules.particleSafety.enabled")) {
+            var particles = config.modules.particleSafety;
+            return particles.enabled
+                    && switch (option.path()) {
+                        case "modules.particleSafety.maxElderGuardians" -> particles.limitElderGuardians;
+                        case "modules.particleSafety.maxExplosionEmitters" -> particles.limitExplosionEmitters;
+                        case "modules.particleSafety.maxGustEmitters" -> particles.limitGustEmitters;
+                        case "modules.particleSafety.maxPerPacket" -> particles.limitPerPacket;
+                        case "modules.particleSafety.maxPerWindow", "modules.particleSafety.windowMillis" ->
+                            particles.limitRate;
+                        case "modules.particleSafety.warningCooldownSeconds" -> particles.showWarnings;
+                        default -> true;
+                    };
+        }
         LumenConfig.PreviewConfig preview = config.modules.preview;
         if (option.path().startsWith("modules.extraStatistics.")
                 && !option.path().equals("modules.extraStatistics.enabled")
@@ -484,7 +594,9 @@ public final class LumenOptionRegistry {
                     "modules.safety.maxTranslationDepth",
                     "modules.safety.maxTranslationVisits" -> config.modules.safety.translationCrashFix;
             case "modules.safety.textLengthLimit" -> config.modules.safety.translationCrashFix;
-            case "modules.safety.maxCharacters" ->
+            case "modules.safety.maxCharacters",
+                    "modules.safety.maxLiteralCharacters",
+                    "modules.safety.obfuscatedCharacterWeight" ->
                 config.modules.safety.translationCrashFix && config.modules.safety.textLengthLimit;
             case "modules.preview.activation",
                     "modules.preview.density",

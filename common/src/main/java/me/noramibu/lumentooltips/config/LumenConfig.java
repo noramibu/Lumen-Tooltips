@@ -23,9 +23,28 @@ public final class LumenConfig {
         public ExtraStatisticsConfig extraStatistics = new ExtraStatisticsConfig();
         public ItemEditorConfig itemEditor = new ItemEditorConfig();
         public SafetyConfig safety = new SafetyConfig();
+        public ParticleSafetyConfig particleSafety = new ParticleSafetyConfig();
         public TooltipConfig tooltip = new TooltipConfig();
         public PreviewConfig preview = new PreviewConfig();
         public StatisticsConfig statistics = new StatisticsConfig();
+    }
+
+    public static final class ParticleSafetyConfig {
+        public boolean enabled = true;
+        public boolean limitPerPacket = true;
+        public boolean limitRate = true;
+        public boolean dropOversized = false;
+        public boolean showWarnings = true;
+        public boolean limitElderGuardians = true;
+        public int maxElderGuardians = 1;
+        public boolean limitExplosionEmitters = true;
+        public int maxExplosionEmitters = 8;
+        public boolean limitGustEmitters = true;
+        public int maxGustEmitters = 16;
+        public int maxPerPacket = 4096;
+        public int maxPerWindow = 32768;
+        public int windowMillis = 1000;
+        public int warningCooldownSeconds = 10;
     }
 
     public static final class StatisticsConfig {
@@ -97,7 +116,9 @@ public final class LumenConfig {
         public boolean translationCrashFix = true;
         public boolean globalComponentVisitGuard = true;
         public boolean textLengthLimit = true;
-        public int maxCharacters = 8192;
+        public int maxCharacters = 65_536;
+        public int maxLiteralCharacters = 524_288;
+        public int obfuscatedCharacterWeight = 50;
         public int maxTranslationDepth = 64;
         public int maxTranslationVisits = 2048;
     }
