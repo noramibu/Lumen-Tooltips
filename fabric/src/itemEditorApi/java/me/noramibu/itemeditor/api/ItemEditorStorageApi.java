@@ -8,6 +8,14 @@ import net.minecraft.world.item.ItemStack;
 public final class ItemEditorStorageApi {
   private ItemEditorStorageApi() {}
 
+    public static CompletableFuture<Boolean> openStorageItem(String itemId) {
+        throw new UnsupportedOperationException();
+    }
+
+    public static CompletableFuture<Boolean> openStorageSlot(String pageId, int slot) {
+        throw new UnsupportedOperationException();
+    }
+
   public static CompletableFuture<List<StoragePage>> listPages() {
     throw new UnsupportedOperationException();
   }
@@ -32,6 +40,22 @@ public final class ItemEditorStorageApi {
   public record StoragePage(String id, int number, String name, String plainName, int itemCount) {}
 
   public record StoreResult(Status status, int slot) {}
+
+  public static CompletableFuture<Optional<DuplicateMatch>> findDuplicate(ItemStack stack) {
+    throw new UnsupportedOperationException();
+  }
+
+  public static CompletableFuture<UniqueStoreResult> addIfAbsent(String pageId, ItemStack stack) {
+    throw new UnsupportedOperationException();
+  }
+
+  public record DuplicateMatch(String pageId, int pageNumber, int slot, String itemId) {}
+
+  public record UniqueStoreResult(UniqueStoreStatus status, int slot, Optional<DuplicateMatch> duplicate) {}
+
+  public enum UniqueStoreStatus {
+    SAVED, DUPLICATE, PAGE_NOT_FOUND, PAGE_FULL, INVALID_ITEM
+  }
 
   public enum Status {
     SAVED,

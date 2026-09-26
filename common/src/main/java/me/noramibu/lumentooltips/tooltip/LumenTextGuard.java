@@ -46,7 +46,7 @@ public final class LumenTextGuard {
 
     public static boolean inspect(Component component, Object output) {
         InspectionConsumer inspection = new InspectionConsumer();
-        component.visit(inspection);
+        component.visit(inspection, Style.EMPTY);
         if (inspection.budget().blocked && output instanceof GuardedConsumer guarded) {
             guarded.budget().translationFailure = inspection.budget().translationFailure;
         }
@@ -56,7 +56,7 @@ public final class LumenTextGuard {
     public static Component protect(Component component) {
         if (!enabled()) return component;
         InspectionConsumer inspection = new InspectionConsumer();
-        component.visit(inspection);
+        component.visit(inspection, Style.EMPTY);
         return inspection.budget().blocked
                 ? Component.literal(warningText(inspection.budget())).withStyle(warningStyle(component.getStyle()))
                 : component;
@@ -142,14 +142,17 @@ public final class LumenTextGuard {
         Budget budget();
     }
 
-    private record InspectionConsumer(Budget budget) implements FormattedText.ContentConsumer<Unit>, GuardedConsumer {
+    private record InspectionConsumer(Budget budget)
+            implements FormattedText.StyledContentConsumer<Unit>, GuardedConsumer {
         private InspectionConsumer() {
             this(new Budget());
         }
 
         @Override
-        public Optional<Unit> accept(String text) {
-            return this.budget.accept(text.length()) ? Optional.empty() : FormattedText.STOP_ITERATION;
+        public Optional<Unit> accept(Style style, String text) {
+            return this.budget.accept(text.length(), style.isObfuscated())
+                    ? Optional.empty()
+                    : FormattedText.STOP_ITERATION;
         }
     }
 
@@ -169,7 +172,9 @@ public final class LumenTextGuard {
             implements FormattedText.StyledContentConsumer<T>, GuardedConsumer {
         @Override
         public Optional<T> accept(Style style, String text) {
-            return this.budget.accept(text.length()) ? this.output.accept(style, text) : this.warning(style);
+            return this.budget.accept(text.length(), style.isObfuscated())
+                    ? this.output.accept(style, text)
+                    : this.warning(style);
         }
 
         private Optional<T> warning(Style style) {
@@ -184,7 +189,8 @@ public final class LumenTextGuard {
         private final int maxTranslationVisits;
         private final boolean limitCharacters;
         private int remainingCharacters;
-        private int remainingLiteralCharacters = 524_288;
+        private int remainingLiteralCharacters;
+        private final int obfuscatedCharacterWeight;
         private final IdentityHashMap<Object, Boolean> visitedComponents = new IdentityHashMap<>();
         private final boolean[] repeatedComponents = new boolean[128];
         private int componentDepth;
@@ -200,17 +206,27 @@ public final class LumenTextGuard {
             this(
                     LumenConfigManager.current().modules.safety.textLengthLimit,
                     LumenConfigManager.current().modules.safety.maxCharacters,
+                    LumenConfigManager.current().modules.safety.maxLiteralCharacters,
+                    LumenConfigManager.current().modules.safety.obfuscatedCharacterWeight,
                     LumenConfigManager.current().modules.safety.maxTranslationDepth,
                     LumenConfigManager.current().modules.safety.maxTranslationVisits);
         }
 
         Budget(int characters, int depth, int visits) {
-            this(true, characters, depth, visits);
+            this(true, characters, 524_288, 50, depth, visits);
         }
 
-        private Budget(boolean limitCharacters, int characters, int depth, int visits) {
+        private Budget(
+                boolean limitCharacters,
+                int characters,
+                int literalCharacters,
+                int obfuscatedWeight,
+                int depth,
+                int visits) {
             this.limitCharacters = limitCharacters;
             this.remainingCharacters = characters;
+            this.remainingLiteralCharacters = literalCharacters;
+            this.obfuscatedCharacterWeight = obfuscatedWeight;
             this.maxTranslationDepth = depth;
             this.maxTranslationVisits = visits;
         }
@@ -224,6 +240,10 @@ public final class LumenTextGuard {
         }
 
         boolean accept(int length) {
+            return accept(length, false);
+        }
+
+        boolean accept(int length, boolean obfuscated) {
             if (this.blocked) return false;
             if (!this.limitCharacters) return true;
             boolean expanded = this.translationDepth > 0
@@ -232,12 +252,14 @@ public final class LumenTextGuard {
                 this.blocked = true;
                 return false;
             }
-            if (expanded && length > this.remainingCharacters) {
-                this.blocked = this.translationFailure = true;
+            long cost = (long) length * (obfuscated ? this.obfuscatedCharacterWeight : 1);
+            if ((expanded || obfuscated) && cost > this.remainingCharacters) {
+                this.blocked = true;
+                this.translationFailure = expanded && !obfuscated;
                 return false;
             }
-            if (expanded) {
-                this.remainingCharacters -= length;
+            if (expanded || obfuscated) {
+                this.remainingCharacters -= (int) cost;
             }
             this.remainingLiteralCharacters -= length;
             return true;
