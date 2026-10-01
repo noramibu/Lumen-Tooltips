@@ -13,6 +13,9 @@
   "entrypoints": {
     "client": [
       "me.noramibu.lumentooltips.fabric.FabricLumenTooltips"
+    ],
+    "modmenu": [
+      "me.noramibu.lumentooltips.fabric.LumenModMenu"
     ]
   },
   "mixins": [

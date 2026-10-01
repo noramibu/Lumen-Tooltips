@@ -151,6 +151,8 @@ public final class LumenConfig {
         public boolean shulkers = true;
         public boolean containers = true;
         public ContainerPreviewMode containerMode = ContainerPreviewMode.FULL;
+        public ContainerStacking mergeContainerStacks = ContainerStacking.OFF;
+        public ContainerPreviewAlignment containerAlignment = ContainerPreviewAlignment.LEFT;
         public boolean showContainerTitle = false;
         public boolean showContainerCounts = true;
         public int containerTintPercent = 55;
