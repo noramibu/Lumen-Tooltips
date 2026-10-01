@@ -106,7 +106,7 @@ public final class LumenOptionRegistry {
                     "modules.itemEditor.saveKey",
                     config -> config.modules.itemEditor.saveKey,
                     (config, value) -> config.modules.itemEditor.saveKey = value),
-            ConfigOption.itemEditorTarget(
+            ConfigOption.enumCycle(
                     "modules.itemEditor.target",
                     config -> config.modules.itemEditor.target,
                     (config, value) -> config.modules.itemEditor.target = value),
@@ -184,7 +184,7 @@ public final class LumenOptionRegistry {
                     "modules.durability.useColors",
                     config -> config.modules.durability.useColors,
                     (config, value) -> config.modules.durability.useColors = value),
-            ConfigOption.durabilityPalette(
+            ConfigOption.enumCycle(
                     "modules.durability.palette",
                     config -> config.modules.durability.palette,
                     (config, value) -> config.modules.durability.palette = value),
@@ -352,7 +352,7 @@ public final class LumenOptionRegistry {
                     "modules.preview.enabled",
                     config -> config.modules.preview.enabled,
                     (config, value) -> config.modules.preview.enabled = value),
-            ConfigOption.previewDensity(
+            ConfigOption.enumCycle(
                     "modules.preview.density",
                     config -> config.modules.preview.density,
                     (config, value) -> config.modules.preview.density = value),
@@ -396,10 +396,18 @@ public final class LumenOptionRegistry {
                     "modules.preview.containers",
                     config -> config.modules.preview.containers,
                     (config, value) -> config.modules.preview.containers = value),
-            ConfigOption.containerMode(
+            ConfigOption.enumCycle(
                     "modules.preview.containerMode",
                     config -> config.modules.preview.containerMode,
                     (config, value) -> config.modules.preview.containerMode = value),
+            ConfigOption.enumCycle(
+                    "modules.preview.containerAlignment",
+                    config -> config.modules.preview.containerAlignment,
+                    (config, value) -> config.modules.preview.containerAlignment = value),
+            ConfigOption.enumCycle(
+                    "modules.preview.mergeContainerStacks",
+                    config -> config.modules.preview.mergeContainerStacks,
+                    (config, value) -> config.modules.preview.mergeContainerStacks = value),
             ConfigOption.toggle(
                     "modules.preview.showContainerTitle",
                     config -> config.modules.preview.showContainerTitle,
@@ -621,6 +629,8 @@ public final class LumenOptionRegistry {
             case "modules.preview.openKey" -> preview.enabled && (preview.openContainers || preview.openBooks);
             case "modules.preview.nestedNavigation" -> preview.enabled && preview.openContainers;
             case "modules.preview.containerMode",
+                    "modules.preview.mergeContainerStacks",
+                    "modules.preview.containerAlignment",
                     "modules.preview.showContainerTitle",
                     "modules.preview.showContainerCounts" ->
                 preview.enabled && (preview.shulkers || preview.containers || preview.enderChest);

@@ -15,7 +15,7 @@ public final class LumenScreenOpener {
             configPending = true;
             return;
         }
-        minecraft.setScreenAndShow(new LumenConfigScreen(parent));
+        minecraft.gui.setScreen(new LumenConfigScreen(parent));
     }
 
     public static void openPending() {
@@ -23,6 +23,6 @@ public final class LumenScreenOpener {
             return;
         }
         configPending = false;
-        Minecraft.getInstance().setScreenAndShow(new LumenConfigScreen(null));
+        Minecraft.getInstance().gui.setScreen(new LumenConfigScreen(null));
     }
 }

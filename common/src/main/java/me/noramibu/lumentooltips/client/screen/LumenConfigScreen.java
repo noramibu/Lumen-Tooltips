@@ -24,6 +24,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -84,7 +87,7 @@ public final class LumenConfigScreen extends Screen {
                     "preview",
                     "containers",
                     Items.SHULKER_BOX,
-                    "openContainers nestedNavigation shulkers containers containerMode showContainerTitle "
+                    "openContainers nestedNavigation shulkers containers containerMode mergeContainerStacks containerAlignment showContainerTitle "
                             + "showContainerCounts containerTintPercent bundles enderChest"),
             subCategory("preview", "books", Items.WRITTEN_BOOK, "openBooks books maps"),
             subCategory(
@@ -107,7 +110,6 @@ public final class LumenConfigScreen extends Screen {
     private int page;
     private int pageCount = 1;
     private int rowsPerPage = MAX_ROWS;
-    private int visibleOptionCount;
     private boolean searching;
     private boolean showingCategories = true;
     private boolean showAdvanced;
@@ -127,7 +129,7 @@ public final class LumenConfigScreen extends Screen {
     protected void init() {
         int searchWidth = Math.min(BUTTON_WIDTH, this.width - 24);
         int searchY = this.height / 7 + 5;
-        int searchX = Math.max(6, (this.width - searchWidth - 96) / 2);
+        int searchX = (this.width - searchWidth) / 2;
         this.searchBox = this.addRenderableWidget(new EditBox(
                 this.font,
                 searchX,
@@ -203,7 +205,7 @@ public final class LumenConfigScreen extends Screen {
                 .append(sectionTitle)
                 .append(" (" + (this.page + 1) + "/" + this.pageCount + ")");
         graphics.centeredText(this.font, pageTitle, this.width / 2, 12, TEXT_COLOR);
-        if (!this.showingCategories && this.visibleOptionCount == 0) {
+        if (!this.showingCategories && this.optionWidgets.isEmpty()) {
             graphics.centeredText(
                     this.font,
                     Component.translatable("screen.lumen_tooltips.config.no_results"),
@@ -237,11 +239,7 @@ public final class LumenConfigScreen extends Screen {
             rebuildPage();
             return;
         }
-        closeToParent();
-    }
-
-    private void closeToParent() {
-        this.minecraft.setScreenAndShow(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     private void rebuildPage() {
@@ -250,7 +248,8 @@ public final class LumenConfigScreen extends Screen {
         this.pageWidgets.clear();
         this.optionWidgets.clear();
         this.categoryPlacements.clear();
-        this.visibleOptionCount = 0;
+        this.searchBox.setWidth(Math.min(BUTTON_WIDTH, this.width - 24));
+        this.searchBox.setX((this.width - this.searchBox.getWidth()) / 2);
 
         String query = this.searchText.toLowerCase(Locale.ROOT).trim();
         this.searching = !query.isEmpty();
@@ -301,7 +300,6 @@ public final class LumenConfigScreen extends Screen {
             int y = gridY + (index / columns) * ROW_PITCH;
             OptionWidget optionWidget = new OptionWidget(matchingOptions.get(firstOption + index), x, y, optionWidth);
             this.optionWidgets.add(optionWidget);
-            this.visibleOptionCount++;
             addPageWidget(optionWidget.control);
             addPageWidget(optionWidget.reset);
         }
@@ -336,7 +334,7 @@ public final class LumenConfigScreen extends Screen {
                         button -> resetCurrentMenu())
                 .bounds(x, y, actionWidth, BUTTON_HEIGHT)
                 .build();
-        reset.active = !this.showingCategories && this.visibleOptionCount > 0;
+        reset.active = !this.showingCategories && !this.optionWidgets.isEmpty();
         addPageWidget(reset);
         x += actionWidth + FOOTER_GAP;
 
@@ -423,6 +421,8 @@ public final class LumenConfigScreen extends Screen {
             return;
         }
         int width = 92;
+        this.searchBox.setWidth(Math.min(BUTTON_WIDTH, this.width - width - 28));
+        this.searchBox.setX((this.width - this.searchBox.getWidth() - width - 4) / 2);
         int x = this.searchBox.getX() + this.searchBox.getWidth() + 4;
         addPageWidget(Button.builder(
                         Component.translatable(
@@ -982,7 +982,14 @@ public final class LumenConfigScreen extends Screen {
     }
 
     private static ItemStack itemIcon(Item item) {
-        return item.builtInRegistryHolder().areComponentsBound() ? new ItemStack(item) : ItemStack.EMPTY;
+        var holder = item.builtInRegistryHolder();
+        return holder.areComponentsBound()
+                ? new ItemStack(item)
+                : new ItemStack(Holder.direct(
+                        item,
+                        DataComponentMap.builder()
+                                .set(DataComponents.ITEM_MODEL, holder.key().identifier())
+                                .build()));
     }
 
     private record CategoryPlacement(Category category, int x, int y) {}

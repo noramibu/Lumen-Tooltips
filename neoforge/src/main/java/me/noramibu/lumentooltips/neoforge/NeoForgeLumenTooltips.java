@@ -1,6 +1,7 @@
 package me.noramibu.lumentooltips.neoforge;
 
 import me.noramibu.lumentooltips.LumenTooltips;
+import me.noramibu.lumentooltips.client.screen.LumenConfigScreen;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -8,16 +9,19 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ComposterBlock;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(LumenTooltips.MOD_ID)
 public final class NeoForgeLumenTooltips {
 
-    public NeoForgeLumenTooltips() {
+    public NeoForgeLumenTooltips(ModContainer container) {
+        container.registerExtensionPoint(IConfigScreenFactory.class, (mod, parent) -> new LumenConfigScreen(parent));
         LumenTooltips.init(
                 FMLPaths.CONFIGDIR.get(),
                 new LumenTooltips.Platform(
