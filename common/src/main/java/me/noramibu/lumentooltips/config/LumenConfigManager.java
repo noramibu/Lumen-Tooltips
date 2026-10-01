@@ -2,6 +2,7 @@ package me.noramibu.lumentooltips.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -12,14 +13,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Objects;
 import me.noramibu.lumentooltips.LumenTooltips;
 import org.slf4j.Logger;
 
 public final class LumenConfigManager {
     private static final int CURRENT_SCHEMA_VERSION = 1;
-    private static final Gson GSON =
-            new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(ContainerStacking.class, (JsonDeserializer<ContainerStacking>)
+                    (json, type, context) -> switch (json.getAsString().toLowerCase(Locale.ROOT)) {
+                        case "true", "on" -> ContainerStacking.ON;
+                        case "on_plus", "on+" -> ContainerStacking.ON_PLUS;
+                        default -> ContainerStacking.OFF;
+                    })
+            .setPrettyPrinting()
+            .disableHtmlEscaping()
+            .create();
     private static final String FILE_NAME = LumenTooltips.MOD_ID + ".json";
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -144,15 +154,15 @@ public final class LumenConfigManager {
     private static void validateDurability(LumenConfig.DurabilityConfig durability) {
         durability.palette = Objects.requireNonNullElse(durability.palette, DurabilityPalette.DEFAULT);
         durability.warningPercent = Math.clamp(durability.warningPercent, 1, 99);
-        durability.dangerPercent = Math.clamp(durability.dangerPercent, 1, 99);
-        if (durability.dangerPercent > durability.warningPercent) {
-            durability.dangerPercent = durability.warningPercent;
-        }
+        durability.dangerPercent = Math.clamp(durability.dangerPercent, 1, durability.warningPercent);
     }
 
     private static void validatePreview(LumenConfig.PreviewConfig preview) {
         preview.density = Objects.requireNonNullElse(preview.density, PreviewDensity.VANILLA);
         preview.containerMode = Objects.requireNonNullElse(preview.containerMode, ContainerPreviewMode.FULL);
+        preview.mergeContainerStacks = Objects.requireNonNullElse(preview.mergeContainerStacks, ContainerStacking.OFF);
+        preview.containerAlignment =
+                Objects.requireNonNullElse(preview.containerAlignment, ContainerPreviewAlignment.LEFT);
         preview.activation = Objects.requireNonNullElse(preview.activation, HoldMode.KEY);
         if (preview.activation == HoldMode.SHIFT) {
             preview.activation = HoldMode.KEY;
@@ -182,9 +192,8 @@ public final class LumenConfigManager {
         itemEditor.pageNumber = Math.clamp(itemEditor.pageNumber, 1, LumenConfig.ItemEditorConfig.MAX_PAGE_NUMBER);
         itemEditor.pageName =
                 Objects.requireNonNullElse(itemEditor.pageName, LumenConfig.ItemEditorConfig.DEFAULT_PAGE_NAME);
-        if (itemEditor.pageName.length() > LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH) {
-            itemEditor.pageName = itemEditor.pageName.substring(0, LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH);
-        }
+        itemEditor.pageName = itemEditor.pageName.substring(
+                0, Math.min(itemEditor.pageName.length(), LumenConfig.ItemEditorConfig.MAX_PAGE_NAME_LENGTH));
     }
 
     private static void validateParticleSafety(LumenConfig.ParticleSafetyConfig particles) {
