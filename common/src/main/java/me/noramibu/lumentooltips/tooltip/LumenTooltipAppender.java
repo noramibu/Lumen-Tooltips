@@ -176,7 +176,8 @@ public final class LumenTooltipAppender {
                 enhanced.append(" (" + percent + "%)");
             }
             if (config.modules.durability.useColors) {
-                enhanced.withStyle(style -> style.withColor(durabilityColor(percent, config)));
+                enhanced.withStyle(style ->
+                        style.withColor(config.modules.durability.palette.color(percent, config.modules.durability)));
             }
             tooltip.set(index, enhanced);
             return;
@@ -325,17 +326,5 @@ public final class LumenTooltipAppender {
         } catch (NumberFormatException ignored) {
             return null;
         }
-    }
-
-    private static int durabilityColor(int percent, LumenConfig config) {
-        boolean colorblind =
-                config.modules.durability.palette == me.noramibu.lumentooltips.config.DurabilityPalette.COLORBLIND;
-        if (percent <= config.modules.durability.dangerPercent) {
-            return colorblind ? 0xD55E00 : 0xFF5555;
-        }
-        if (percent <= config.modules.durability.warningPercent) {
-            return colorblind ? 0xE69F00 : 0xFFFF55;
-        }
-        return colorblind ? 0x0072B2 : 0x55FF55;
     }
 }

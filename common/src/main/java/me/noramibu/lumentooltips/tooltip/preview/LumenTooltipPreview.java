@@ -1,10 +1,12 @@
 package me.noramibu.lumentooltips.tooltip.preview;
 
 import it.unimi.dsi.fastutil.ints.IntList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import me.noramibu.lumentooltips.config.ContainerPreviewMode;
+import me.noramibu.lumentooltips.config.ContainerStacking;
 import me.noramibu.lumentooltips.config.LumenConfig;
 import me.noramibu.lumentooltips.config.LumenConfigManager;
 import net.minecraft.client.Minecraft;
@@ -122,6 +124,8 @@ public final class LumenTooltipPreview {
                     "modules.preview.containers",
                     "modules.preview.accents",
                     "modules.preview.containerMode",
+                    "modules.preview.mergeContainerStacks",
+                    "modules.preview.containerAlignment",
                     "modules.preview.showContainerTitle",
                     "modules.preview.showContainerCounts",
                     "modules.preview.containerTintPercent" -> Optional.of(configContainerSample(preview));
@@ -150,7 +154,7 @@ public final class LumenTooltipPreview {
     private static Optional<TooltipComponent> createEnderChestPreview(
             ItemStack stack, LumenConfig.PreviewConfig config) {
         return config.enderChest && stack.is(Items.ENDER_CHEST) && LumenEnderChestMemory.isKnown()
-                ? Optional.of(containerPreview(stack, LumenEnderChestMemory.items(), false, config, 0xFF284060))
+                ? Optional.of(containerPreview(stack, LumenEnderChestMemory.items(), config, 0xFF284060))
                 : Optional.empty();
     }
 
@@ -234,14 +238,13 @@ public final class LumenTooltipPreview {
         return containerPreview(
                 source,
                 stored,
-                shulker,
                 config,
                 shulker ? LumenContainerContents.shulkerColor(source) : GENERIC_CONTAINER_COLOR);
     }
 
     private static TooltipComponent containerPreview(
-            ItemStack source, List<ItemStack> stored, boolean shulker, LumenConfig.PreviewConfig config, int color) {
-        List<ItemStack> visibleItems = config.containerMode == ContainerPreviewMode.COMPACT ? compact(stored) : stored;
+            ItemStack source, List<ItemStack> stored, LumenConfig.PreviewConfig config, int color) {
+        List<ItemStack> visibleItems = containerItems(stored, config);
         int columns = config.containerMode == ContainerPreviewMode.COMPACT
                 ? Math.min(CONTAINER_COLUMNS, Math.max(1, visibleItems.size()))
                 : CONTAINER_COLUMNS;
@@ -260,26 +263,30 @@ public final class LumenTooltipPreview {
             }
         }
         return new LumenContainerTooltipComponent(
-                items, color, hidden, config.showContainerTitle ? source.getHoverName() : null, config);
+                items, columns, color, hidden, config.showContainerTitle ? source.getHoverName() : null, config);
     }
 
-    private static List<ItemStack> compact(List<ItemStack> stored) {
-        List<ItemStack> compact = new java.util.ArrayList<>();
-        for (ItemStack stack : stored) {
-            if (stack.isEmpty()) {
-                continue;
-            }
-            ItemStack existing = compact.stream()
-                    .filter(item -> ItemStack.isSameItemSameComponents(item, stack))
-                    .findFirst()
-                    .orElse(null);
-            if (existing == null) {
-                compact.add(stack.copy());
-            } else {
-                existing.grow(stack.getCount());
+    private static List<ItemStack> containerItems(List<ItemStack> stored, LumenConfig.PreviewConfig config) {
+        List<ItemStack> items = stored;
+        if (config.mergeContainerStacks != ContainerStacking.OFF) {
+            items = new ArrayList<>(stored.size());
+            for (ItemStack stack : stored) {
+                ItemStack existing = stack.isEmpty()
+                        ? null
+                        : items.stream()
+                                .filter(item -> !item.isEmpty() && ItemStack.isSameItemSameComponents(item, stack))
+                                .findFirst()
+                                .orElse(null);
+                if (existing != null) {
+                    existing.setCount((int) Math.min(Integer.MAX_VALUE, (long) existing.getCount() + stack.getCount()));
+                }
+                items.add(existing == null ? stack.copy() : ItemStack.EMPTY);
             }
         }
-        return compact;
+        return config.containerMode == ContainerPreviewMode.COMPACT
+                        || config.mergeContainerStacks == ContainerStacking.ON_PLUS
+                ? items.stream().filter(item -> !item.isEmpty()).toList()
+                : items;
     }
 
     private static TooltipComponent configBundleSample() {
@@ -296,6 +303,7 @@ public final class LumenTooltipPreview {
                 source,
                 List.of(
                         new ItemStack(Items.DIAMOND, 12),
+                        ItemStack.EMPTY,
                         new ItemStack(Items.GOLDEN_APPLE, 3),
                         new ItemStack(Items.ENDER_PEARL, 16),
                         new ItemStack(Items.DIAMOND, 8),

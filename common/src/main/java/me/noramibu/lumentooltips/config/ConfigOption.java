@@ -1,5 +1,6 @@
 package me.noramibu.lumentooltips.config;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
@@ -128,48 +129,25 @@ public record ConfigOption(
                 List.of());
     }
 
-    public static ConfigOption itemEditorTarget(
-            String path,
-            Function<LumenConfig, ItemEditorStorageTarget> getter,
-            BiConsumer<LumenConfig, ItemEditorStorageTarget> setter) {
-        return enumCycle(path, getter, setter, List.of("first_available", "page_number", "page_name"));
-    }
-
-    public static ConfigOption durabilityPalette(
-            String path,
-            Function<LumenConfig, DurabilityPalette> getter,
-            BiConsumer<LumenConfig, DurabilityPalette> setter) {
-        return enumCycle(path, getter, setter, List.of("default", "colorblind"));
-    }
-
-    public static ConfigOption previewDensity(
-            String path, Function<LumenConfig, PreviewDensity> getter, BiConsumer<LumenConfig, PreviewDensity> setter) {
-        return enumCycle(path, getter, setter, List.of("compact", "vanilla", "comfortable"));
-    }
-
-    public static ConfigOption containerMode(
-            String path,
-            Function<LumenConfig, ContainerPreviewMode> getter,
-            BiConsumer<LumenConfig, ContainerPreviewMode> setter) {
-        return enumCycle(path, getter, setter, List.of("compact", "full"));
+    public static <E extends Enum<E>> ConfigOption enumCycle(
+            String path, Function<LumenConfig, E> getter, BiConsumer<LumenConfig, E> setter) {
+        return enumCycle(
+                path,
+                getter,
+                setter,
+                Arrays.stream(getter.apply(DEFAULTS).getDeclaringClass().getEnumConstants())
+                        .map(ConfigOption::serializedName)
+                        .toList());
     }
 
     public static ConfigOption holdMode(
             String path, Function<LumenConfig, HoldMode> getter, BiConsumer<LumenConfig, HoldMode> setter) {
-        return holdMode(path, getter, setter, List.of("always", "key", "advanced"));
+        return enumCycle(path, getter, setter, List.of("always", "key", "advanced"));
     }
 
     public static ConfigOption inputHoldMode(
             String path, Function<LumenConfig, HoldMode> getter, BiConsumer<LumenConfig, HoldMode> setter) {
-        return holdMode(path, getter, setter, List.of("always", "key"));
-    }
-
-    private static ConfigOption holdMode(
-            String path,
-            Function<LumenConfig, HoldMode> getter,
-            BiConsumer<LumenConfig, HoldMode> setter,
-            List<String> cycleValues) {
-        return enumCycle(path, getter, setter, cycleValues);
+        return enumCycle(path, getter, setter, List.of("always", "key"));
     }
 
     private static <E extends Enum<E>> ConfigOption enumCycle(
@@ -238,7 +216,9 @@ public record ConfigOption(
     }
 
     public boolean matchesSearch(String normalizedQuery) {
-        return searchText().contains(normalizedQuery);
+        return String.join(" ", this.path, title().getString(), description().getString())
+                .toLowerCase(Locale.ROOT)
+                .contains(normalizedQuery);
     }
 
     public String getAsString(LumenConfig config) {
@@ -287,6 +267,11 @@ public record ConfigOption(
                                     case "modules.preview.containerMode" ->
                                         enumValue(value, ContainerPreviewMode.FULL)
                                                 .displayName();
+                                    case "modules.preview.containerAlignment" ->
+                                        enumValue(value, ContainerPreviewAlignment.LEFT)
+                                                .displayName();
+                                    case "modules.preview.mergeContainerStacks" ->
+                                        enumValue(value, ContainerStacking.OFF).displayName();
                                     default -> enumValue(value, HoldMode.ALWAYS).displayName();
                                 },
                                 ChatFormatting.YELLOW));
@@ -310,13 +295,8 @@ public record ConfigOption(
             durability.append(" (" + percent + "%)");
         }
         if (config.modules.durability.useColors) {
-            boolean colorblind = config.modules.durability.palette == DurabilityPalette.COLORBLIND;
-            int color = percent <= config.modules.durability.dangerPercent
-                    ? colorblind ? 0xD55E00 : 0xFF5555
-                    : percent <= config.modules.durability.warningPercent
-                            ? colorblind ? 0xE69F00 : 0xFFFF55
-                            : colorblind ? 0x0072B2 : 0x55FF55;
-            durability.withStyle(style -> style.withColor(color));
+            durability.withStyle(style ->
+                    style.withColor(config.modules.durability.palette.color(percent, config.modules.durability)));
         }
         return Component.translatable("item.minecraft.diamond_pickaxe")
                 .append("\n")
@@ -423,11 +403,6 @@ public record ConfigOption(
             case KEY_BIND -> this.setter.accept(config, this.defaultValue);
             case TEXT -> {}
         }
-    }
-
-    private String searchText() {
-        return String.join(" ", this.path, title().getString(), description().getString())
-                .toLowerCase(Locale.ROOT);
     }
 
     private void cycleInteger(LumenConfig config) {

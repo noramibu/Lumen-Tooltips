@@ -51,7 +51,7 @@ public final class LumenContainerOpener {
         if (playerInventory == null || items == null) {
             return false;
         }
-        minecraft.setScreenAndShow(new LumenContainerScreen(stack.copy(), items, playerInventory, parent));
+        minecraft.gui.setScreen(new LumenContainerScreen(stack.copy(), items, playerInventory, parent));
         return true;
     }
 
@@ -64,7 +64,7 @@ public final class LumenContainerOpener {
         if (book == null) {
             return false;
         }
-        Minecraft.getInstance().setScreenAndShow(new BookViewScreen(book));
+        Minecraft.getInstance().gui.setScreen(new BookViewScreen(book));
         return true;
     }
 }

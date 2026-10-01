@@ -106,7 +106,7 @@ public final class LumenContainerScreen extends ContainerScreen {
     @Override
     public void onClose() {
         this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(closeSound(), 1.0F, 0.5F));
-        this.minecraft.setScreenAndShow(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
     }
 
     private SoundEvent closeSound() {

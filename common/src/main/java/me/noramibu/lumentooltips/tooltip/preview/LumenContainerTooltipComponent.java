@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -13,14 +14,14 @@ import org.jspecify.annotations.Nullable;
 
 public final class LumenContainerTooltipComponent implements TooltipComponent, ClientTooltipComponent {
     private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/shulker_box.png");
-    private static final int WIDTH = 176;
-    private static final int FULL_HEIGHT = 76;
-    private static final int COMPACT_HEIGHT = 67;
-    private static final int COMPACT_HEADER_HEIGHT = 6;
-    private static final int COMPACT_CONTENT_Y = 15;
-    private static final int COLUMNS = 9;
+    private static final int BORDER = 7;
+    private static final int SLOT_SIZE = 18;
+    private static final int RIGHT_BORDER_X = 169;
+    private static final int BOTTOM_Y = 159;
 
     private final ItemStack[] items;
+    private final int columns;
+    private final int rows;
     private final int accent;
     private final int hiddenItems;
     private final Component title;
@@ -28,11 +29,14 @@ public final class LumenContainerTooltipComponent implements TooltipComponent, C
 
     LumenContainerTooltipComponent(
             ItemStack[] items,
+            int columns,
             int accent,
             int hiddenItems,
             @Nullable Component title,
             LumenConfig.PreviewConfig config) {
         this.items = items;
+        this.columns = columns;
+        this.rows = Math.max(1, (items.length + columns - 1) / columns);
         this.accent = accent;
         this.hiddenItems = Math.max(0, hiddenItems);
         this.title = title;
@@ -41,66 +45,101 @@ public final class LumenContainerTooltipComponent implements TooltipComponent, C
 
     @Override
     public int getHeight(Font font) {
-        return this.title == null ? COMPACT_HEIGHT : FULL_HEIGHT;
+        return headerHeight() + this.rows * SLOT_SIZE + BORDER;
     }
 
     @Override
     public int getWidth(Font font) {
-        return WIDTH;
+        return BORDER * 2 + this.columns * SLOT_SIZE;
     }
 
     @Override
     public void extractImage(Font font, int x, int y, int width, int height, GuiGraphicsExtractor graphics) {
-        int panelX = x + Math.max(0, (width - WIDTH) / 2);
+        int panelWidth = getWidth(font);
+        int availableSpace = Math.max(0, width - panelWidth);
+        int panelX = x
+                + switch (this.config.containerAlignment) {
+                    case LEFT -> 0;
+                    case CENTER -> availableSpace / 2;
+                    case RIGHT -> availableSpace;
+                };
         int tint = this.config.accents
                 ? LumenPreviewStyle.blend(0xFFFFFFFF, this.accent, this.config.containerTintPercent)
                 : 0xFFFFFFFF;
-        int itemY;
         if (this.title == null) {
-            graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    TEXTURE,
-                    panelX,
-                    y,
-                    0,
-                    0,
-                    WIDTH,
-                    COMPACT_HEADER_HEIGHT,
-                    256,
-                    256,
-                    tint);
-            graphics.blit(
-                    RenderPipelines.GUI_TEXTURED,
-                    TEXTURE,
-                    panelX,
-                    y + COMPACT_HEADER_HEIGHT,
-                    0,
-                    COMPACT_CONTENT_Y,
-                    WIDTH,
-                    FULL_HEIGHT - COMPACT_CONTENT_Y,
-                    256,
-                    256,
-                    tint);
-            itemY = y + COMPACT_HEADER_HEIGHT + 18 - COMPACT_CONTENT_Y;
+            drawStrip(graphics, panelX, y, 0, 6, tint);
+            drawStrip(graphics, panelX, y + 6, 15, 2, tint);
         } else {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, panelX, y, 0, 0, WIDTH, FULL_HEIGHT, 256, 256, tint);
-            graphics.text(font, this.title, panelX + 8, y + 6, 0xFF404040, false);
-            itemY = y + 18;
+            drawStrip(graphics, panelX, y, 0, headerHeight(), tint);
         }
+        for (int row = 0; row < this.rows; row++) {
+            drawStrip(graphics, panelX, y + headerHeight() + row * SLOT_SIZE, 17, SLOT_SIZE, tint);
+        }
+        drawStrip(graphics, panelX, y + headerHeight() + this.rows * SLOT_SIZE, BOTTOM_Y, BORDER, tint);
+        if (this.title != null) {
+            graphics.text(
+                    font,
+                    Language.getInstance().getVisualOrder(font.substrByWidth(this.title, panelWidth - 16)),
+                    panelX + 8,
+                    y + 6,
+                    0xFF404040,
+                    false);
+        }
+        int itemY = y + headerHeight() + 1;
         for (int index = 0; index < this.items.length; index++) {
             ItemStack item = this.items[index];
             if (item.isEmpty()) {
                 continue;
             }
-            int itemX = panelX + 8 + index % COLUMNS * 18;
-            int rowY = itemY + index / COLUMNS * 18;
+            int itemX = panelX + BORDER + 1 + index % this.columns * SLOT_SIZE;
+            int rowY = itemY + index / this.columns * SLOT_SIZE;
             graphics.item(item, itemX, rowY, 0);
             if (this.config.showContainerCounts) {
                 graphics.itemDecorations(font, item, itemX, rowY);
             }
         }
         if (this.hiddenItems > 0) {
-            graphics.text(font, "+" + this.hiddenItems, panelX + 155, itemY + 42, 0xFFFFFFFF, true);
+            String overflow = "+" + this.hiddenItems;
+            graphics.text(
+                    font,
+                    overflow,
+                    panelX + panelWidth - BORDER - font.width(overflow),
+                    itemY + this.rows * SLOT_SIZE - 12,
+                    0xFFFFFFFF,
+                    true);
         }
+    }
+
+    private int headerHeight() {
+        return this.title == null ? 8 : 17;
+    }
+
+    private void drawStrip(GuiGraphicsExtractor graphics, int x, int y, int sourceY, int height, int tint) {
+        int contentWidth = this.columns * SLOT_SIZE;
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0, sourceY, BORDER, height, 256, 256, tint);
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                TEXTURE,
+                x + BORDER,
+                y,
+                BORDER,
+                sourceY,
+                contentWidth,
+                height,
+                256,
+                256,
+                tint);
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED,
+                TEXTURE,
+                x + BORDER + contentWidth,
+                y,
+                RIGHT_BORDER_X,
+                sourceY,
+                BORDER,
+                height,
+                256,
+                256,
+                tint);
     }
 }

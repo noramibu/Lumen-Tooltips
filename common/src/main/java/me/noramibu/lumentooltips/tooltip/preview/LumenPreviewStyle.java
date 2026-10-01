@@ -12,14 +12,6 @@ final class LumenPreviewStyle {
 
     private LumenPreviewStyle() {}
 
-    static int slotSize(LumenConfig.PreviewConfig config) {
-        return switch (config.density) {
-            case COMPACT -> 16;
-            case VANILLA -> 18;
-            case COMFORTABLE -> 20;
-        };
-    }
-
     static int padding(LumenConfig.PreviewConfig config) {
         return switch (config.density) {
             case COMPACT -> 4;

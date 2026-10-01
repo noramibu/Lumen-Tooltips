@@ -59,12 +59,12 @@ final class LumenEntityPreviewResolver {
             return Optional.empty();
         }
         if (stack.is(Items.PAINTING)) {
-            return config.paintings ? createPainting(stack, level) : Optional.empty();
+            return createPainting(stack, level);
         }
-        if (config.spawnEggs && stack.getItem() instanceof SpawnEggItem) {
+        if (stack.getItem() instanceof SpawnEggItem) {
             return createSpawnEggEntity(stack, level);
         }
-        return config.mobBuckets && stack.getItem() instanceof MobBucketItem
+        return stack.getItem() instanceof MobBucketItem
                 ? createBucketEntity(stack, level)
                 : createSpawnerEntity(stack, level);
     }
